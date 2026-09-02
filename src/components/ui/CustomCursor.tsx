@@ -9,7 +9,10 @@ export const CustomCursor: React.FC = () => {
 
   useEffect(() => {
     // Only enable on non-touch desktop screens
-    if (window.matchMedia('(pointer: coarse)').matches) {
+    if (
+      window.matchMedia('(pointer: coarse)').matches ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
       return;
     }
 
@@ -40,8 +43,8 @@ export const CustomCursor: React.FC = () => {
     <motion.div
       className="fixed top-0 left-0 pointer-events-none z-50 hidden lg:block"
       animate={{
-        x: mousePosition.x - (isImageHover ? 14 : 4),
-        y: mousePosition.y - (isImageHover ? 14 : 4),
+        x: mousePosition.x - (isImageHover ? 10 : 4),
+        y: mousePosition.y - (isImageHover ? 10 : 4),
         scale: 1,
       }}
       transition={{
@@ -53,8 +56,8 @@ export const CustomCursor: React.FC = () => {
     >
       {isImageHover ? (
         <div className="flex items-center gap-2">
-          <span className="block h-7 w-7 rounded-full border border-white/70 bg-white/20 shadow-[0_0_14px_rgba(255,255,255,0.28)]" />
-          <span className="text-[9px] font-space tracking-[0.2em] font-semibold uppercase text-white/90 bg-black/22 backdrop-blur-sm px-2 py-1">
+          <span className="block h-5 w-5 rounded-full border border-white/70 bg-white/20 shadow-[0_0_14px_rgba(255,255,255,0.28)]" />
+          <span className="translate-y-4 text-[8px] font-space tracking-[0.18em] font-semibold uppercase text-white/90 bg-black/55 backdrop-blur-sm px-1.5 py-0.5">
             {cursorText || 'EXPLORE'}
           </span>
         </div>

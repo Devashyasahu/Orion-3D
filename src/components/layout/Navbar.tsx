@@ -25,7 +25,6 @@ export const Navbar: React.FC = () => {
 
   const navItems = [
     { label: 'WORLDS', path: '/worlds' },
-    { label: 'VAULT', path: '/worlds' },
     { label: 'CUSTOM', path: '/custom' },
     { label: 'PROCESS', path: '/studio' },
     { label: 'ABOUT', path: '/about' },
@@ -57,12 +56,12 @@ export const Navbar: React.FC = () => {
           </NavLink>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-10">
+          <nav className="hidden md:flex items-center space-x-12">
             {navItems.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}
-                onMouseEnter={() => setCursor(item.label, 'hover')}
+                onMouseEnter={() => setCursor('OPEN', 'hover')}
                 onMouseLeave={resetCursor}
                 className={({ isActive }) =>
                   `text-[11px] font-inter tracking-[0.15em] font-medium transition-all duration-300 relative py-1 uppercase ${
@@ -90,7 +89,7 @@ export const Navbar: React.FC = () => {
 
           <NavLink
             to="/custom"
-            onMouseEnter={() => setCursor('CREATE YOURS', 'hover')}
+            onMouseEnter={() => setCursor('OPEN', 'hover')}
             onMouseLeave={resetCursor}
             className="hidden md:inline-flex min-h-10 items-center border border-cyan-200/40 px-4 text-[10px] font-space font-semibold tracking-[0.18em] text-cyan-100 uppercase hover:border-cyan-100 hover:bg-cyan-300/10 transition-colors"
           >

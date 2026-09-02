@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import Lenis from 'lenis';
 import { CursorProvider } from './context/CursorContext';
@@ -20,9 +20,11 @@ import { WorldsPage } from './pages/WorldsPage';
 import { WorldDetailPage } from './pages/WorldDetailPage';
 import { CharacterDetailPage } from './pages/CharacterDetailPage';
 import { SeriesPage } from './pages/SeriesPage';
+import { LegacyProductRedirect } from './pages/LegacyProductRedirect';
 import { StudioPage } from './pages/StudioPage';
 import { CustomPage } from './pages/CustomPage';
 import { AboutPage } from './pages/AboutPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 
 function ExperienceFrame() {
   const location = useLocation();
@@ -51,11 +53,11 @@ function ExperienceFrame() {
           <Route path="/worlds/:worldSlug/:seriesSlug" element={<SeriesPage />} />
           <Route path="/artifacts/:worldSlug/:seriesSlug/:productSlug" element={<CharacterDetailPage />} />
           <Route path="/world/:worldId" element={<WorldDetailPage />} />
-          <Route path="/character/:slug" element={<CharacterDetailPage />} />
+          <Route path="/character/:slug" element={<LegacyProductRedirect />} />
           <Route path="/studio" element={<StudioPage />} />
           <Route path="/custom" element={<CustomPage />} />
           <Route path="/about" element={<AboutPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </motion.main>
 

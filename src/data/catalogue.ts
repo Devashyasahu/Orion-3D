@@ -1,4 +1,4 @@
-export type ProductStatus = 'made-to-order' | 'ready-to-ship' | 'concept';
+export type ProductStatus = 'made-to-order' | 'ready-to-ship' | 'concept-preview' | 'coming-soon';
 export type ProductFinish = 'painted' | 'unpainted';
 
 export interface CatalogueProduct {
@@ -12,6 +12,7 @@ export interface CatalogueProduct {
   finishes: ProductFinish[];
   status: ProductStatus;
   priceRange: [number, number];
+  showPrice?: boolean;
   accentColor: string;
   tags?: string[];
 }
@@ -35,6 +36,9 @@ export interface CatalogueWorld {
   atmosphere: string;
   bgGradient: string;
   heroImage: string;
+  emptyState?: string;
+  emptyCta?: string;
+  customLink?: string;
   series: CatalogueSeries[];
 }
 
@@ -59,8 +63,30 @@ const product = (
   finishes: ['painted', 'unpainted'],
   status: 'made-to-order',
   priceRange,
+  showPrice: false,
   accentColor,
 });
+
+export const modelCountLabel = (count: number) => `${count} ${count === 1 ? 'model' : 'models'}`;
+
+export const publicModelCountLabel = (count: number, emptyState?: string) =>
+  count === 0 ? (emptyState || 'Coming Soon') : modelCountLabel(count);
+
+export const getStatusMeta = (status: ProductStatus) => {
+  const meta: Record<ProductStatus, { label: string; tone: string }> = {
+    'made-to-order': { label: 'Made to Order', tone: 'cyan' },
+    'ready-to-ship': { label: 'Ready to Ship', tone: 'green' },
+    'concept-preview': { label: 'Concept Preview', tone: 'violet' },
+    'coming-soon': { label: 'Coming Soon', tone: 'amber' },
+  };
+
+  return meta[status];
+};
+
+export const formatStatus = (status: ProductStatus) => getStatusMeta(status).label;
+
+export const canonicalProductPath = (worldSlug: string, seriesSlug: string, productSlug: string) =>
+  `/artifacts/${worldSlug}/${seriesSlug}/${productSlug}`;
 
 export const CATALOGUE_WORLDS: CatalogueWorld[] = [
   {
@@ -84,7 +110,7 @@ export const CATALOGUE_WORLDS: CatalogueWorld[] = [
           product('roronoa-zoro', 'Roronoa Zoro', asset('one%20peace/Zoro.jpg'), 'A sword-forward collectible posed for a dramatic anime shelf composition.', '#16a34a'),
           product('monkey-d-luffy', 'Monkey D. Luffy', asset('one%20peace/Luffy.jpg'), 'A bright, kinetic adventure figure with strong red and amber shelf energy.', '#f97316'),
           product('sanji', 'Sanji', asset('one%20peace/sanji.jpg'), 'A clean lineup figure designed for a balanced crew display.', '#fde047'),
-          { ...product('nami', 'Nami', asset('one%20peace/Luffy.jpg'), 'Placeholder slot for the upcoming Nami model image.', '#fb7185'), status: 'concept' },
+          { ...product('nami', 'Nami', asset('one%20peace/Luffy.jpg'), 'Placeholder slot for the upcoming Nami model image.', '#fb7185'), status: 'concept-preview' },
         ],
       },
       {
@@ -183,6 +209,8 @@ export const CATALOGUE_WORLDS: CatalogueWorld[] = [
     atmosphere: 'Violet haze, black glass, moonlit texture, and theatrical shadows.',
     bgGradient: 'from-purple-950/44 via-zinc-950/70 to-[#050507]',
     heroImage: '/images/custom_hero.png',
+    emptyState: 'WORLD FORMING',
+    emptyCta: 'PREVIEW WORLD',
     series: [
       { id: 'wednesday', name: 'Wednesday', slug: 'wednesday', description: 'A reserved category for future Wednesday-inspired collectible models.', heroImage: '/images/custom_hero.png', products: [] },
       { id: 'stranger-things-inspired', name: 'Stranger Things-inspired models', slug: 'stranger-things-inspired', description: 'A future chapter for eerie supernatural shelf pieces.', heroImage: '/images/custom_hero_1787236824668.png', products: [] },
@@ -198,6 +226,8 @@ export const CATALOGUE_WORLDS: CatalogueWorld[] = [
     atmosphere: 'Cyan scan light, black metal, display-grid glow, and arcade motion.',
     bgGradient: 'from-cyan-950/38 via-zinc-950/74 to-[#05070d]',
     heroImage: '/images/gaming_mecha_collectible_1787236843739.png',
+    emptyState: 'COMING SOON',
+    emptyCta: 'PREVIEW WORLD',
     series: [
       { id: 'future-gaming-characters', name: 'Future gaming characters', slug: 'future-gaming-characters', description: 'A ready home for upcoming gaming models.', heroImage: '/images/gaming_mecha.png', products: [] },
     ],
@@ -212,6 +242,9 @@ export const CATALOGUE_WORLDS: CatalogueWorld[] = [
     atmosphere: 'Studio light, material texture, warm highlights, and human craft.',
     bgGradient: 'from-yellow-950/22 via-zinc-950/76 to-[#060607]',
     heroImage: '/images/custom_hero.png',
+    emptyState: 'BUILT FROM YOUR IDEA',
+    emptyCta: 'DISCOVER MORE',
+    customLink: '/custom',
     series: [
       { id: 'customer-portraits', name: 'Customer portraits', slug: 'customer-portraits', description: 'Future personalized portrait builds.', heroImage: '/images/custom_hero.png', products: [] },
       { id: 'original-characters', name: 'Original characters', slug: 'original-characters', description: 'Original character concepts and display figures.', heroImage: '/images/anime_art_sculpture.png', products: [] },
@@ -242,6 +275,11 @@ export const getProductByLegacySlug = (slug: string) => {
   };
 
   return getAllProducts().find((item) => item.slug === (aliases[slug] || slug));
+};
+
+export const getCanonicalProduct = (slug: string) => {
+  const product = getProductByLegacySlug(slug);
+  return product ? { product, path: canonicalProductPath(product.world.slug, product.series.slug, product.slug) } : undefined;
 };
 
 export const countWorldProducts = (world: CatalogueWorld) =>

@@ -1,10 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { getAllProducts, getProductByLegacySlug, getProductByPath } from '../data/catalogue';
+import { formatStatus, getAllProducts, getProductByLegacySlug, getProductByPath } from '../data/catalogue';
 import { CommissionModal } from '../components/common/CommissionModal';
 import { FlipWord } from '../components/ui/FlipWord';
 import { useCursor } from '../context/CursorContext';
+import { FigureImage } from '../components/common/FigureImage';
+import { PageMeta } from '../components/common/PageMeta';
+import { StatusBadge } from '../components/common/StatusBadge';
+import { NotFoundPage } from './NotFoundPage';
 
 export const CharacterDetailPage: React.FC = () => {
   const { slug, worldSlug, seriesSlug, productSlug } = useParams<{ slug: string; worldSlug: string; seriesSlug: string; productSlug: string }>();
@@ -24,14 +28,7 @@ export const CharacterDetailPage: React.FC = () => {
   }, [product]);
 
   if (!product) {
-    return (
-      <div className="min-h-screen bg-[#040406] text-white flex flex-col items-center justify-center p-6">
-        <h1 className="text-4xl font-space font-bold uppercase">MODEL UNFOUND</h1>
-        <button onClick={() => navigate('/worlds')} className="mt-6 text-xs font-space tracking-[0.2em] text-cyan-300 hover:underline uppercase">
-          EXPLORE WORLDS -&gt;
-        </button>
-      </div>
-    );
+    return <NotFoundPage title="MODEL UNFOUND" message="This product URL does not match a published ORION model." />;
   }
 
   const gallery = product.gallery.length ? product.gallery : [product.image];
@@ -39,6 +36,12 @@ export const CharacterDetailPage: React.FC = () => {
 
   return (
     <div className="product-page min-h-screen bg-transparent text-white pb-24 relative overflow-hidden" style={{ '--world-accent': product.accentColor } as React.CSSProperties}>
+      <PageMeta
+        title={`${product.name} 3D Figure | ORION 3D`}
+        description={`${product.description} View size, finish, gallery, and reservation options for this ORION 3D figure.`}
+        path={`/artifacts/${product.world.slug}/${product.series.slug}/${product.slug}`}
+        image={product.image}
+      />
       <CommissionModal isOpen={isCommissionOpen} onClose={() => setIsCommissionOpen(false)} characterName={product.name} />
       <div className={`absolute inset-0 bg-gradient-to-br ${product.world.bgGradient} opacity-90`} />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_58%_32%,rgba(125,211,252,0.12),transparent_34%),radial-gradient(circle_at_18%_80%,rgba(255,255,255,0.08),transparent_30%)]" />
@@ -47,7 +50,7 @@ export const CharacterDetailPage: React.FC = () => {
         <section className="product-hero">
           <div className="product-gallery" aria-label={`${product.name} image gallery`}>
             <div className="product-gallery__stage">
-              <img src={gallery[activeImage] || product.image} alt={`${product.name} complete 3D model`} />
+              <FigureImage src={gallery[activeImage] || product.image} alt={`${product.name} complete 3D model`} loading="eager" />
             </div>
             <div className="product-gallery__controls">
               <button type="button" aria-label="Previous image" onClick={() => setActiveImage((activeImage + gallery.length - 1) % gallery.length)}><ChevronLeft size={18} /></button>
@@ -69,7 +72,8 @@ export const CharacterDetailPage: React.FC = () => {
 
           <div className="product-copy">
             <span>{product.world.name} / {product.series.name}</span>
-            <h1><FlipWord text={product.name} accentColor={product.accentColor} /></h1>
+            <h1><FlipWord text={product.name} accentColor={product.accentColor} className="word-flip--clean" /></h1>
+            <StatusBadge status={product.status} />
             <p>{product.description}</p>
             <div className="product-options">
               <fieldset>
@@ -91,7 +95,7 @@ export const CharacterDetailPage: React.FC = () => {
         <section className="product-specs" aria-label="Model specifications">
           <div><span>World</span><strong>{product.world.name}</strong></div>
           <div><span>Series</span><strong>{product.series.name}</strong></div>
-          <div><span>Status</span><strong>{product.status.replaceAll('-', ' ')}</strong></div>
+          <div><span>Status</span><strong>{formatStatus(product.status)}</strong></div>
           <div><span>Pricing</span><strong>Reserved for final studio pricing</strong></div>
           <div><span>Media</span><strong>Front, side, rear, and detail slots ready</strong></div>
         </section>
@@ -107,10 +111,12 @@ export const CharacterDetailPage: React.FC = () => {
                 key={`${item.slug}-${index}`}
                 type="button"
                 onClick={() => navigate(`/artifacts/${item.world.slug}/${item.series.slug}/${item.slug}`)}
-                onMouseEnter={() => setCursor(item.name, 'image')}
+                onMouseEnter={() => setCursor('VIEW', 'image')}
                 onMouseLeave={resetCursor}
+                tabIndex={index >= related.length ? -1 : 0}
+                aria-hidden={index >= related.length}
               >
-                <img src={item.image} alt={`${item.name} 3D model`} loading="lazy" />
+                <FigureImage src={item.image} alt={`${item.name} 3D model`} loading="lazy" />
                 <span>{item.name}</span>
               </button>
             ))}

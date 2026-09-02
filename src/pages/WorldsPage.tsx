@@ -1,8 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { CATALOGUE_WORLDS, countWorldProducts, getWorldLeadProducts } from '../data/catalogue';
+import { CATALOGUE_WORLDS, countWorldProducts, getWorldLeadProducts, publicModelCountLabel } from '../data/catalogue';
 import { useCursor } from '../context/CursorContext';
+import { FigureImage } from '../components/common/FigureImage';
+import { PageMeta } from '../components/common/PageMeta';
 
 export const WorldsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -10,6 +12,11 @@ export const WorldsPage: React.FC = () => {
 
   return (
     <div className="discover-page min-h-screen bg-transparent text-white pt-32 pb-24 relative overflow-hidden">
+      <PageMeta
+        title="Worlds | ORION 3D"
+        description="Browse ORION 3D worlds, series, and character model previews."
+        path="/worlds"
+      />
       <div className="discover-page__intro px-6 md:px-12">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-end">
           <div className="lg:col-span-8 space-y-5">
@@ -44,23 +51,23 @@ export const WorldsPage: React.FC = () => {
             >
               <div className="discover-world__texture" />
               <div className="discover-world__copy">
-                <span>{String(idx + 1).padStart(2, '0')} / {countWorldProducts(world)} MODELS</span>
+                <span>{String(idx + 1).padStart(2, '0')} / {publicModelCountLabel(countWorldProducts(world), world.emptyState)}</span>
                 <h2>{world.name}</h2>
                 <p>{world.description}</p>
                 <button
                   type="button"
-                  onClick={() => navigate(`/worlds/${world.slug}`)}
-                  onMouseEnter={() => setCursor(`ENTER ${world.name}`, 'hover')}
+                  onClick={() => navigate(world.customLink || `/worlds/${world.slug}`)}
+                  onMouseEnter={() => setCursor('OPEN', 'hover')}
                   onMouseLeave={resetCursor}
                 >
-                  ENTER WORLD -&gt;
+                  {countWorldProducts(world) === 0 ? (world.emptyCta || 'PREVIEW WORLD') : 'ENTER WORLD'} -&gt;
                 </button>
               </div>
 
               <div className="discover-world__stage">
                 <div className="discover-world__horizon" />
                 {lead && (
-                  <img
+                  <FigureImage
                     src={lead.image}
                     alt={lead.name}
                     className="discover-world__lead"
@@ -68,7 +75,7 @@ export const WorldsPage: React.FC = () => {
                   />
                 )}
                 {supporting.map((character, supportIdx) => (
-                  <img
+                  <FigureImage
                     key={character.slug}
                     src={character.image}
                     alt=""

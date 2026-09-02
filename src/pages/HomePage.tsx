@@ -2,10 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { FlipWord } from '../components/ui/FlipWord';
-import { CATALOGUE_WORLDS, countWorldProducts, getWorldLeadProducts } from '../data/catalogue';
+import { CATALOGUE_WORLDS, countWorldProducts, getCanonicalProduct, getWorldLeadProducts, publicModelCountLabel } from '../data/catalogue';
 import { getFeaturedArtifacts } from '../data/characters';
 import { useCursor } from '../context/CursorContext';
 import { CommissionModal } from '../components/common/CommissionModal';
+import { FigureImage } from '../components/common/FigureImage';
+import { PageMeta } from '../components/common/PageMeta';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -15,13 +17,17 @@ export const HomePage: React.FC = () => {
   const [isCommissionOpen, setIsCommissionOpen] = useState(false);
   const [activeArtifact, setActiveArtifact] = useState(0);
   const [realitySplit, setRealitySplit] = useState(54);
+  const [readyWorldImages, setReadyWorldImages] = useState(0);
+  const [worldGridVisible, setWorldGridVisible] = useState(true);
   const { scrollY } = useScroll();
 
   const heroOpacity = useTransform(scrollY, [0, 760], [1, 0.08]);
   const vaultArtifacts = getFeaturedArtifacts();
   const activeCharacter = vaultArtifacts[activeArtifact] || vaultArtifacts[0];
+  const activeCanonicalProduct = getCanonicalProduct(activeCharacter.slug);
   const firstWorldRow = CATALOGUE_WORLDS;
   const secondWorldRow = [...CATALOGUE_WORLDS].reverse();
+  const isWorldGridReady = readyWorldImages >= Math.min(3, firstWorldRow.length);
   const heroSpotlight = {
     '--spot-x': `${50 + mousePos.x * 10}%`,
     '--spot-y': `${42 + mousePos.y * 8}%`,
@@ -37,6 +43,18 @@ export const HomePage: React.FC = () => {
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid || !('IntersectionObserver' in window)) return;
+
+    const observer = new IntersectionObserver(([entry]) => setWorldGridVisible(entry.isIntersecting), {
+      rootMargin: '160px 0px',
+    });
+
+    observer.observe(grid);
+    return () => observer.disconnect();
   }, []);
 
   const handleGridPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -64,33 +82,50 @@ export const HomePage: React.FC = () => {
     grid.addEventListener('pointercancel', stopDragging);
   };
 
-  const renderWorldCard = (world: (typeof CATALOGUE_WORLDS)[number], duplicateIndex: number) => {
+  const renderWorldCard = (world: (typeof CATALOGUE_WORLDS)[number], duplicateIndex: number, isClone = false) => {
     const products = getWorldLeadProducts(world);
     const lead = products[0];
     const supporting = products.slice(1, 3);
+    const modelCount = countWorldProducts(world);
+    const targetPath = world.customLink || `/worlds/${world.slug}`;
+    const cta = modelCount === 0 ? (world.emptyCta || 'PREVIEW WORLD') : 'EXPLORE WORLD';
 
     return (
       <article
         key={`${world.slug}-${duplicateIndex}`}
         className="world-marquee-card"
+        aria-hidden={isClone}
         style={{ '--world-accent': world.accentColor } as React.CSSProperties}
       >
         <button
           type="button"
           className="world-marquee-card__hit"
-          onClick={() => navigate(`/worlds/${world.slug}`)}
-          onMouseEnter={() => setCursor(`ENTER ${world.name}`, 'hover')}
+          onClick={() => navigate(targetPath)}
+          onMouseEnter={() => setCursor('OPEN', 'hover')}
           onMouseLeave={resetCursor}
           aria-label={`Explore ${world.name}`}
+          tabIndex={isClone ? -1 : 0}
         />
         <div className="world-marquee-card__media">
           <div className="world-marquee-card__glow" />
-          <img
+          <FigureImage
             src={lead?.image || world.heroImage}
-            alt=""
+            alt={isClone ? '' : `${world.name} featured model`}
             className="world-marquee-card__lead"
             loading={duplicateIndex === 0 ? 'eager' : 'lazy'}
           />
+          {duplicateIndex < firstWorldRow.length && !isClone && (
+            <img
+              src={lead?.image || world.heroImage}
+              alt=""
+              className="world-marquee-card__preload"
+              loading="eager"
+              width="1"
+              height="1"
+              onLoad={() => setReadyWorldImages((count) => Math.min(firstWorldRow.length, count + 1))}
+              onError={() => setReadyWorldImages((count) => Math.min(firstWorldRow.length, count + 1))}
+            />
+          )}
           {supporting.map((item, index) => (
             <button
               key={item.slug}
@@ -101,18 +136,19 @@ export const HomePage: React.FC = () => {
                 event.stopPropagation();
                 navigate(`/artifacts/${world.slug}/${item.series.slug}/${item.slug}`);
               }}
-              onMouseEnter={() => setCursor(item.name, 'image')}
+              onMouseEnter={() => setCursor('VIEW', 'image')}
               onMouseLeave={resetCursor}
+              tabIndex={isClone ? -1 : 0}
             >
-              <img src={item.image} alt={`${item.name} 3D model`} loading="lazy" />
+              <FigureImage src={item.image} alt={`${item.name} 3D model`} loading="lazy" />
             </button>
           ))}
         </div>
         <div className="world-marquee-card__copy">
-          <span>{countWorldProducts(world)} models</span>
+          <span>{publicModelCountLabel(modelCount, world.emptyState)}</span>
           <h3>{world.name}</h3>
           <p>{world.description}</p>
-          <strong>EXPLORE WORLD -&gt;</strong>
+          <strong>{cta} -&gt;</strong>
         </div>
       </article>
     );
@@ -120,6 +156,11 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="relative min-h-screen bg-transparent text-white overflow-hidden">
+      <PageMeta
+        title="ORION 3D — Digital Worlds. Physical Characters."
+        description="Explore ORION 3D worlds, series, and physical character figures staged as a cinematic collectible catalogue."
+        path="/"
+      />
       <CommissionModal isOpen={isCommissionOpen} onClose={() => setIsCommissionOpen(false)} characterName={activeCharacter.name} />
 
       <section className="orion-arrival orion-arrival--simple" style={heroSpotlight}>
@@ -149,7 +190,7 @@ export const HomePage: React.FC = () => {
           <button
             type="button"
             onClick={() => document.getElementById('world-discovery')?.scrollIntoView({ behavior: 'smooth' })}
-            onMouseEnter={() => setCursor('EXPLORE COLLECTION', 'hover')}
+            onMouseEnter={() => setCursor('EXPLORE', 'hover')}
             onMouseLeave={resetCursor}
           >
             EXPLORE THE COLLECTION -&gt;
@@ -157,7 +198,7 @@ export const HomePage: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate('/custom')}
-            onMouseEnter={() => setCursor('CREATE CUSTOM', 'hover')}
+            onMouseEnter={() => setCursor('OPEN', 'hover')}
             onMouseLeave={resetCursor}
             className="orion-arrival__secondary"
           >
@@ -175,15 +216,15 @@ export const HomePage: React.FC = () => {
 
         <div
           ref={gridRef}
-          className="world-marquee"
+          className={`world-marquee ${isWorldGridReady ? 'is-ready' : ''} ${worldGridVisible ? 'is-visible' : ''}`}
           onPointerDown={handleGridPointerDown}
           aria-label="Scrollable Orion worlds"
         >
           <div className="world-marquee__row world-marquee__row--left">
-            {[...firstWorldRow, ...firstWorldRow].map(renderWorldCard)}
+            {[...firstWorldRow, ...firstWorldRow].map((world, index) => renderWorldCard(world, index, index >= firstWorldRow.length))}
           </div>
-          <div className="world-marquee__row world-marquee__row--right">
-            {[...secondWorldRow, ...secondWorldRow].map(renderWorldCard)}
+          <div className="world-marquee__row world-marquee__row--right" aria-hidden="true">
+            {[...secondWorldRow, ...secondWorldRow].map((world, index) => renderWorldCard(world, index, true))}
           </div>
         </div>
       </section>
@@ -220,7 +261,7 @@ export const HomePage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsCommissionOpen(true)}
-              onMouseEnter={() => setCursor(activeCharacter.commerce.primaryCta, 'hover')}
+              onMouseEnter={() => setCursor('OPEN', 'hover')}
               onMouseLeave={resetCursor}
             >
               {activeCharacter.commerce.primaryCta}
@@ -228,8 +269,8 @@ export const HomePage: React.FC = () => {
           </div>
           <button
             type="button"
-            onClick={() => navigate(`/character/${activeCharacter.slug}`)}
-            onMouseEnter={() => setCursor('DISCOVER ARTIFACT', 'hover')}
+            onClick={() => navigate(activeCanonicalProduct?.path || `/character/${activeCharacter.slug}`)}
+            onMouseEnter={() => setCursor('VIEW', 'hover')}
             onMouseLeave={resetCursor}
             className="orion-text-cta"
           >
@@ -247,7 +288,7 @@ export const HomePage: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate('/worlds')}
-            onMouseEnter={() => setCursor('OPEN VAULT', 'hover')}
+            onMouseEnter={() => setCursor('OPEN', 'hover')}
             onMouseLeave={resetCursor}
             className="orion-text-cta"
           >
@@ -262,7 +303,7 @@ export const HomePage: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsCommissionOpen(true)}
-            onMouseEnter={() => setCursor(activeCharacter.commerce.primaryCta, 'hover')}
+            onMouseEnter={() => setCursor('OPEN', 'hover')}
             onMouseLeave={resetCursor}
           >
             {activeCharacter.commerce.primaryCta}
@@ -276,7 +317,7 @@ export const HomePage: React.FC = () => {
               role="tab"
               aria-selected={activeArtifact === index}
               onClick={() => setActiveArtifact(index)}
-              onMouseEnter={() => setCursor(character.name, 'image')}
+              onMouseEnter={() => setCursor('VIEW', 'image')}
               onMouseLeave={resetCursor}
               className={`${activeArtifact === index ? 'is-active' : ''} artifact-${character.slug}`}
               style={{ '--artifact-accent': character.accentColor } as React.CSSProperties}
@@ -332,7 +373,7 @@ export const HomePage: React.FC = () => {
         <button
           type="button"
           onClick={() => navigate('/custom')}
-          onMouseEnter={() => setCursor('ENTER THE FORGE', 'hover')}
+          onMouseEnter={() => setCursor('OPEN', 'hover')}
           onMouseLeave={resetCursor}
           className="orion-text-cta"
         >

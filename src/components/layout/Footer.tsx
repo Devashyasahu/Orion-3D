@@ -31,7 +31,7 @@ export const Footer: React.FC = () => {
               <li>
                 <NavLink
                   to="/worlds"
-                  onMouseEnter={() => setCursor('WORLDS', 'hover')}
+                  onMouseEnter={() => setCursor('OPEN', 'hover')}
                   onMouseLeave={resetCursor}
                   className="hover:text-cyan-300 transition-colors"
                 >
@@ -41,7 +41,7 @@ export const Footer: React.FC = () => {
               <li>
                 <NavLink
                   to="/studio"
-                  onMouseEnter={() => setCursor('STUDIO', 'hover')}
+                  onMouseEnter={() => setCursor('OPEN', 'hover')}
                   onMouseLeave={resetCursor}
                   className="hover:text-cyan-300 transition-colors"
                 >
@@ -51,7 +51,7 @@ export const Footer: React.FC = () => {
               <li>
                 <NavLink
                   to="/custom"
-                  onMouseEnter={() => setCursor('CUSTOM', 'hover')}
+                  onMouseEnter={() => setCursor('OPEN', 'hover')}
                   onMouseLeave={resetCursor}
                   className="hover:text-cyan-300 transition-colors"
                 >
@@ -61,7 +61,7 @@ export const Footer: React.FC = () => {
               <li>
                 <a
                   href="mailto:contact@orion3d.art?subject=ORION%203D%20shipping%20and%20care%20question"
-                  onMouseEnter={() => setCursor('FAQ', 'hover')}
+                  onMouseEnter={() => setCursor('OPEN', 'hover')}
                   onMouseLeave={resetCursor}
                   className="hover:text-cyan-300 transition-colors"
                 >
@@ -71,7 +71,7 @@ export const Footer: React.FC = () => {
               <li>
                 <NavLink
                   to="/about"
-                  onMouseEnter={() => setCursor('ABOUT', 'hover')}
+                  onMouseEnter={() => setCursor('OPEN', 'hover')}
                   onMouseLeave={resetCursor}
                   className="hover:text-cyan-300 transition-colors"
                 >
@@ -90,7 +90,7 @@ export const Footer: React.FC = () => {
               <li>
                 <a
                   href="mailto:contact@orion3d.art?subject=ORION%203D%20collectible%20inquiry"
-                  onMouseEnter={() => setCursor('EMAIL INQUIRY', 'hover')}
+                  onMouseEnter={() => setCursor('OPEN', 'hover')}
                   onMouseLeave={resetCursor}
                   className="hover:text-cyan-300 transition-colors"
                 >
@@ -102,7 +102,7 @@ export const Footer: React.FC = () => {
                   href="https://wa.me/?text=Hi%20ORION%203D%2C%20I%20want%20to%20reserve%20a%20collectible%20or%20discuss%20a%20custom%20figure."
                   target="_blank"
                   rel="noreferrer"
-                  onMouseEnter={() => setCursor('WHATSAPP QUOTE', 'hover')}
+                  onMouseEnter={() => setCursor('OPEN', 'hover')}
                   onMouseLeave={resetCursor}
                   className="hover:text-cyan-300 transition-colors"
                 >
@@ -112,7 +112,7 @@ export const Footer: React.FC = () => {
               <li>
                 <a
                   href="mailto:contact@orion3d.art"
-                  onMouseEnter={() => setCursor('EMAIL', 'hover')}
+                  onMouseEnter={() => setCursor('OPEN', 'hover')}
                   onMouseLeave={resetCursor}
                   className="hover:text-cyan-300 transition-colors"
                 >
@@ -122,7 +122,7 @@ export const Footer: React.FC = () => {
               <li>
                 <a
                   href="mailto:contact@orion3d.art?subject=ORION%203D%20policy%20request"
-                  onMouseEnter={() => setCursor('POLICIES', 'hover')}
+                  onMouseEnter={() => setCursor('OPEN', 'hover')}
                   onMouseLeave={resetCursor}
                   className="hover:text-cyan-300 transition-colors"
                 >
