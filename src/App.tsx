@@ -93,7 +93,14 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setLoading(false), 1450);
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+    const hasVisited = window.sessionStorage.getItem('orion-loader-seen') === 'true';
+    const duration = prefersReducedMotion ? 150 : hasVisited ? 350 : isMobile ? 950 : 1450;
+    const timer = window.setTimeout(() => {
+      window.sessionStorage.setItem('orion-loader-seen', 'true');
+      setLoading(false);
+    }, duration);
     return () => window.clearTimeout(timer);
   }, []);
 

@@ -68,6 +68,8 @@ export const WorldDetailPage: React.FC = () => {
   useEffect(() => {
     if (!filtersOpen) return;
 
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     const focusable = drawerRef.current?.querySelectorAll<HTMLElement>('button, input, select, [tabindex]:not([tabindex="-1"])');
     focusable?.[0]?.focus();
 
@@ -91,7 +93,10 @@ export const WorldDetailPage: React.FC = () => {
     };
 
     document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onKeyDown);
+    };
   }, [filtersOpen]);
 
   if (!world) {

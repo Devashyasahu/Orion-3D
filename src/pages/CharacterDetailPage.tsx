@@ -33,6 +33,29 @@ export const CharacterDetailPage: React.FC = () => {
 
   const gallery = product.gallery.length ? product.gallery : [product.image];
   const galleryLabels = ['Complete model', 'Front placeholder', 'Side placeholder', 'Rear placeholder', 'Detail placeholder'];
+  const showNextImage = () => setActiveImage((activeImage + 1) % gallery.length);
+  const showPreviousImage = () => setActiveImage((activeImage + gallery.length - 1) % gallery.length);
+
+  const handleGalleryPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const target = event.currentTarget;
+    target.setPointerCapture(event.pointerId);
+
+    const onPointerUp = (upEvent: PointerEvent) => {
+      const deltaX = upEvent.clientX - startX;
+      const deltaY = upEvent.clientY - startY;
+      if (Math.abs(deltaX) > 48 && Math.abs(deltaX) > Math.abs(deltaY) * 1.4) {
+        if (deltaX < 0) showNextImage();
+        else showPreviousImage();
+      }
+      target.removeEventListener('pointerup', onPointerUp);
+      target.removeEventListener('pointercancel', onPointerUp);
+    };
+
+    target.addEventListener('pointerup', onPointerUp);
+    target.addEventListener('pointercancel', onPointerUp);
+  };
 
   return (
     <div className="product-page min-h-screen bg-transparent text-white pb-24 relative overflow-hidden" style={{ '--world-accent': product.accentColor } as React.CSSProperties}>
@@ -49,11 +72,11 @@ export const CharacterDetailPage: React.FC = () => {
       <main className="product-shell">
         <section className="product-hero">
           <div className="product-gallery" aria-label={`${product.name} image gallery`}>
-            <div className="product-gallery__stage">
+            <div className="product-gallery__stage" onPointerDown={handleGalleryPointerDown}>
               <FigureImage src={gallery[activeImage] || product.image} alt={`${product.name} complete 3D model`} loading="eager" />
             </div>
             <div className="product-gallery__controls">
-              <button type="button" aria-label="Previous image" onClick={() => setActiveImage((activeImage + gallery.length - 1) % gallery.length)}><ChevronLeft size={18} /></button>
+              <button type="button" aria-label="Previous image" onClick={showPreviousImage}><ChevronLeft size={18} /></button>
               <div>
                 {galleryLabels.map((label, index) => (
                   <button
@@ -66,7 +89,18 @@ export const CharacterDetailPage: React.FC = () => {
                   </button>
                 ))}
               </div>
-              <button type="button" aria-label="Next image" onClick={() => setActiveImage((activeImage + 1) % gallery.length)}><ChevronRight size={18} /></button>
+              <button type="button" aria-label="Next image" onClick={showNextImage}><ChevronRight size={18} /></button>
+            </div>
+            <div className="product-gallery__dots" aria-label="Gallery position">
+              {gallery.map((image, index) => (
+                <button
+                  key={`${image}-${index}`}
+                  type="button"
+                  className={activeImage === index ? 'is-active' : ''}
+                  aria-label={`Show image ${index + 1}`}
+                  onClick={() => setActiveImage(index)}
+                />
+              ))}
             </div>
           </div>
 

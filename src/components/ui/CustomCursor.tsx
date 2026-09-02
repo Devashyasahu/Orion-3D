@@ -41,7 +41,7 @@ export const CustomCursor: React.FC = () => {
 
   return (
     <motion.div
-      className="fixed top-0 left-0 pointer-events-none z-50 hidden lg:block"
+      className="custom-cursor fixed top-0 left-0 pointer-events-none z-50 hidden lg:block"
       animate={{
         x: mousePosition.x - (isImageHover ? 10 : 4),
         y: mousePosition.y - (isImageHover ? 10 : 4),

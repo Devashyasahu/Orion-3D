@@ -19,6 +19,7 @@ export const HomePage: React.FC = () => {
   const [realitySplit, setRealitySplit] = useState(54);
   const [readyWorldImages, setReadyWorldImages] = useState(0);
   const [worldGridVisible, setWorldGridVisible] = useState(true);
+  const [forgeChoice, setForgeChoice] = useState('character');
   const { scrollY } = useScroll();
 
   const heroOpacity = useTransform(scrollY, [0, 760], [1, 0.08]);
@@ -227,6 +228,11 @@ export const HomePage: React.FC = () => {
             {[...secondWorldRow, ...secondWorldRow].map((world, index) => renderWorldCard(world, index, true))}
           </div>
         </div>
+        <div className="world-marquee-progress" aria-hidden="true">
+          {firstWorldRow.map((world) => (
+            <span key={world.slug} style={{ '--world-accent': world.accentColor } as React.CSSProperties} />
+          ))}
+        </div>
       </section>
 
       <section className={`artifact-encounter artifact-${activeCharacter.slug} image-mode-${activeCharacter.imageMode}`} style={{ '--artifact-accent': activeCharacter.accentColor } as React.CSSProperties}>
@@ -365,9 +371,9 @@ export const HomePage: React.FC = () => {
           TO BRING INTO REALITY?
         </h2>
         <div className="forge-tease__choices" aria-label="Forge creation types">
-          <button>A CHARACTER <small>Reference images</small></button>
-          <button>YOURSELF <small>Portrait or avatar</small></button>
-          <button>AN ORIGINAL CREATION <small>Concept brief</small></button>
+          <button type="button" className={forgeChoice === 'character' ? 'is-selected' : ''} onClick={() => setForgeChoice('character')}>A CHARACTER <small>Reference images</small></button>
+          <button type="button" className={forgeChoice === 'yourself' ? 'is-selected' : ''} onClick={() => setForgeChoice('yourself')}>YOURSELF <small>Portrait or avatar</small></button>
+          <button type="button" className={forgeChoice === 'original' ? 'is-selected' : ''} onClick={() => setForgeChoice('original')}>AN ORIGINAL CREATION <small>Concept brief</small></button>
         </div>
         <p className="forge-tease__note">Includes sculpt preview, one revision round, production estimate, and quote before payment.</p>
         <button
@@ -391,8 +397,14 @@ export const HomePage: React.FC = () => {
           <p>Machines make the form. People give it soul through sanding, painting, assembly, and inspection.</p>
         </div>
         <div className="human-craft__images">
-          <img src="/images/studio_printing.png" alt="Orion 3D printing process" loading="lazy" />
-          <img src="/images/studio_finishing.png" alt="Orion physical finishing process" loading="lazy" />
+          <figure>
+            <img src="/images/studio_printing.png" alt="Orion 3D printing process" loading="lazy" />
+            <figcaption>Printing / Sanding / Priming</figcaption>
+          </figure>
+          <figure>
+            <img src="/images/studio_finishing.png" alt="Orion physical finishing process" loading="lazy" />
+            <figcaption>Painting / Assembly / Inspection</figcaption>
+          </figure>
         </div>
       </section>
 

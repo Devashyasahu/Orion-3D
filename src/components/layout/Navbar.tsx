@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
@@ -7,6 +7,8 @@ import { useCursor } from '../../context/CursorContext';
 export const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const { setCursor, resetCursor } = useCursor();
 
@@ -22,6 +24,43 @@ export const Navbar: React.FC = () => {
   useEffect(() => {
     setMobileOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const focusable = mobileMenuRef.current?.querySelectorAll<HTMLElement>('a, button, [tabindex]:not([tabindex="-1"])');
+    focusable?.[0]?.focus();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileOpen(false);
+        menuButtonRef.current?.focus();
+      }
+
+      if (event.key === 'Tab' && focusable && focusable.length > 0) {
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [mobileOpen]);
 
   const navItems = [
     { label: 'WORLDS', path: '/worlds' },
@@ -98,9 +137,11 @@ export const Navbar: React.FC = () => {
 
           {/* Mobile Hamburger Toggle */}
           <button
+            ref={menuButtonRef}
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden text-white/80 hover:text-white p-2 rounded-lg bg-white/5 border border-white/10"
+            className="mobile-menu-button md:hidden text-white/80 hover:text-white p-2 bg-white/5 border border-white/10"
             aria-label="Toggle menu"
+            aria-expanded={mobileOpen}
           >
             {mobileOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -115,12 +156,13 @@ export const Navbar: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 top-[70px] z-30 bg-[#040406]/95 backdrop-blur-2xl px-8 py-12 flex flex-col justify-between border-b border-white/10 md:hidden"
+            ref={mobileMenuRef}
+            className="mobile-nav-panel fixed inset-0 z-[75] bg-[#040406]/96 backdrop-blur-2xl px-8 py-12 flex flex-col justify-between border-b border-white/10 md:hidden"
           >
             <div className="flex flex-col space-y-8 mt-6">
               <NavLink
                 to="/"
-                className="text-2xl font-space tracking-[0.12em] text-white hover:text-cyan-300"
+                className="mobile-nav-panel__link text-2xl font-space tracking-[0.12em] text-white hover:text-cyan-300"
               >
                 HOME
               </NavLink>
@@ -129,7 +171,7 @@ export const Navbar: React.FC = () => {
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) =>
-                    `text-2xl font-space tracking-[0.12em] transition-colors ${
+                    `mobile-nav-panel__link text-2xl font-space tracking-[0.12em] transition-colors ${
                       isActive ? 'text-cyan-300 font-bold' : 'text-white/70 hover:text-white'
                     }`
                   }
@@ -137,6 +179,12 @@ export const Navbar: React.FC = () => {
                   {item.label}
                 </NavLink>
               ))}
+              <NavLink
+                to="/custom"
+                className="mobile-nav-panel__cta text-2xl font-space tracking-[0.12em] text-cyan-100"
+              >
+                CREATE YOURS
+              </NavLink>
             </div>
 
             <div className="pt-8 border-t border-white/10 text-xs font-space tracking-widest text-white/40">

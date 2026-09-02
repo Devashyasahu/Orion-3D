@@ -30,6 +30,8 @@ export function FigureImage({
   return (
     <img
       src={src}
+      srcSet={`${src} 480w, ${src} 900w, ${src} 1400w`}
+      sizes="(max-width: 767px) 86vw, (max-width: 1200px) 48vw, 720px"
       alt={alt}
       className={className}
       loading={loading}
