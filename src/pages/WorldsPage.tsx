@@ -1,8 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { WORLDS } from '../data/worlds';
-import { getCharactersByWorld } from '../data/characters';
+import { CATALOGUE_WORLDS, countWorldProducts, getWorldLeadProducts } from '../data/catalogue';
 import { useCursor } from '../context/CursorContext';
 
 export const WorldsPage: React.FC = () => {
@@ -28,8 +27,8 @@ export const WorldsPage: React.FC = () => {
       </div>
 
       <div className="discover-worlds">
-        {WORLDS.map((world, idx) => {
-          const characters = getCharactersByWorld(world.id);
+        {CATALOGUE_WORLDS.map((world, idx) => {
+          const characters = getWorldLeadProducts(world);
           const lead = characters[0];
           const supporting = characters.slice(1, 4);
 
@@ -41,16 +40,16 @@ export const WorldsPage: React.FC = () => {
               viewport={{ once: true, margin: '-12%' }}
               transition={{ duration: 0.8 }}
               className="discover-world"
-              style={{ '--world-accent': world.themeColor } as React.CSSProperties}
+              style={{ '--world-accent': world.accentColor } as React.CSSProperties}
             >
               <div className="discover-world__texture" />
               <div className="discover-world__copy">
-                <span>{String(idx + 1).padStart(2, '0')} / {characters.length} ARTIFACTS</span>
+                <span>{String(idx + 1).padStart(2, '0')} / {countWorldProducts(world)} MODELS</span>
                 <h2>{world.name}</h2>
-                <p>{world.subhead}</p>
+                <p>{world.description}</p>
                 <button
                   type="button"
-                  onClick={() => navigate(`/world/${world.id}`)}
+                  onClick={() => navigate(`/worlds/${world.slug}`)}
                   onMouseEnter={() => setCursor(`ENTER ${world.name}`, 'hover')}
                   onMouseLeave={resetCursor}
                 >
@@ -62,7 +61,7 @@ export const WorldsPage: React.FC = () => {
                 <div className="discover-world__horizon" />
                 {lead && (
                   <img
-                    src={lead.heroImage}
+                    src={lead.image}
                     alt={lead.name}
                     className="discover-world__lead"
                     loading={idx === 0 ? 'eager' : 'lazy'}
@@ -71,7 +70,7 @@ export const WorldsPage: React.FC = () => {
                 {supporting.map((character, supportIdx) => (
                   <img
                     key={character.slug}
-                    src={character.heroImage}
+                    src={character.image}
                     alt=""
                     className={`discover-world__support discover-world__support--${supportIdx + 1}`}
                     loading="lazy"

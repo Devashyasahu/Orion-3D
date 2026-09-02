@@ -1,171 +1,134 @@
-import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { getWorldById } from '../data/worlds';
-import { CHARACTERS, getCharactersByWorld } from '../data/characters';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { CATALOGUE_WORLDS, getWorldBySlug } from '../data/catalogue';
 import { FlipWord } from '../components/ui/FlipWord';
 import { useCursor } from '../context/CursorContext';
 
 export const WorldDetailPage: React.FC = () => {
-  const { worldId } = useParams<{ worldId: string }>();
+  const { worldId, worldSlug } = useParams<{ worldId: string; worldSlug: string }>();
   const navigate = useNavigate();
   const { setCursor, resetCursor } = useCursor();
-  const world = getWorldById(worldId || '');
-  const directCharacters = getCharactersByWorld(worldId || '');
+  const world = getWorldBySlug(worldSlug || worldId || '');
+  const [seriesFilter, setSeriesFilter] = useState('all');
+  const [characterFilter, setCharacterFilter] = useState('');
+  const [sizeFilter, setSizeFilter] = useState('all');
+  const [finishFilter, setFinishFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [priceFilter, setPriceFilter] = useState(10000);
+
+  const products = useMemo(() => {
+    if (!world) return [];
+
+    return world.series
+      .flatMap((series) => series.products.map((product) => ({ ...product, series })))
+      .filter((product) => seriesFilter === 'all' || product.series.slug === seriesFilter)
+      .filter((product) => product.name.toLowerCase().includes(characterFilter.toLowerCase()))
+      .filter((product) => sizeFilter === 'all' || product.sizes.includes(sizeFilter))
+      .filter((product) => finishFilter === 'all' || product.finishes.includes(finishFilter as never))
+      .filter((product) => statusFilter === 'all' || product.status === statusFilter)
+      .filter((product) => product.priceRange[0] <= priceFilter);
+  }, [characterFilter, finishFilter, priceFilter, seriesFilter, sizeFilter, statusFilter, world]);
 
   if (!world) {
     return (
       <div className="min-h-screen bg-[#070e1b] text-white flex flex-col items-center justify-center p-6">
         <h1 className="text-4xl font-syne font-bold uppercase tracking-tight">WORLD UNCHARTED</h1>
-        <button
-          onClick={() => navigate('/worlds')}
-          className="mt-6 text-xs font-space tracking-[0.2em] text-cyan-300 hover:underline uppercase font-semibold"
-        >
+        <button onClick={() => navigate('/worlds')} className="mt-6 text-xs font-space tracking-[0.2em] text-cyan-300 hover:underline uppercase font-semibold">
           RETURN TO WORLDS -&gt;
         </button>
       </div>
     );
   }
 
-  const isDeathNote = world.id === 'death-note';
-
-  const characters = directCharacters.length > 0
-    ? directCharacters
-    : world.characterSlugs.map((slug) => CHARACTERS.find((c) => c.slug === slug)).filter(Boolean) as typeof CHARACTERS;
+  const relatedWorlds = CATALOGUE_WORLDS.filter((item) => item.slug !== world.slug).slice(0, 4);
+  const sizes = Array.from(new Set(world.series.flatMap((series) => series.products.flatMap((product) => product.sizes))));
 
   return (
-    <div className={`world-environment world-environment-${world.id} min-h-screen bg-transparent text-white pb-32 relative overflow-hidden`}>
-      <div className={`absolute inset-0 bg-gradient-to-br ${world.bgGradient} opacity-80`} />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_15%,rgba(255,255,255,0.12),transparent_35%),radial-gradient(circle_at_75%_80%,rgba(251,191,36,0.10),transparent_35%)]" />
-      <div className="world-skyline" />
-      <div className="world-weather" />
-      <div className="world-symbols" />
+    <div className={`catalogue-page min-h-screen bg-transparent text-white pb-28 relative overflow-hidden`}>
+      <div className={`absolute inset-0 bg-gradient-to-br ${world.bgGradient} opacity-85`} />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_24%_18%,rgba(255,255,255,0.12),transparent_32%),radial-gradient(circle_at_76%_72%,rgba(125,211,252,0.10),transparent_34%)]" />
 
-      <section className="relative min-h-[85vh] px-6 md:px-12 pt-36 flex items-center z-10">
-        <div className="world-entry max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className="lg:col-span-5 space-y-6">
-            <div className="flex items-center space-x-3">
-              <span className="text-xs font-space tracking-[0.35em] uppercase font-semibold" style={{ color: world.themeColor }}>
-                ENTER WORLD
-              </span>
-              <span className="text-white/30 text-xs">/</span>
-              <span className="text-xs font-space tracking-widest text-white/60 uppercase">{world.id}</span>
-            </div>
-
-            <h1 className="type-display-l font-syne uppercase text-white">
-              <FlipWord text={world.name} accentColor={world.themeColor} />
-            </h1>
-
-            <p className="text-lg md:text-2xl font-space font-medium tracking-[0.15em] text-white/90 uppercase">
-              {world.headline}
-            </p>
-
-            <p className="text-sm font-space tracking-wider text-white/70 uppercase max-w-2xl leading-relaxed">
-              {world.description}
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.88, y: 50 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-            className="lg:col-span-7 relative world-entry__figure"
-            style={{ '--world-accent': world.themeColor } as React.CSSProperties}
-          >
-            <div className="world-entry__horizon" />
-            <img src={world.heroImage} alt={world.name} className="world-entry__figure-img filter brightness-105 contrast-110" />
-            <div className="world-entry__mist" />
-            <p className="world-entry__atmosphere">{world.atmosphere}</p>
-          </motion.div>
-        </div>
+      <section className="catalogue-hero">
+        <motion.div initial={{ opacity: 0, y: 34 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9 }} className="catalogue-hero__copy">
+          <span style={{ color: world.accentColor }}>ORION WORLD / {world.slug}</span>
+          <h1><FlipWord text={world.headline} accentColor={world.accentColor} /></h1>
+          <p>{world.description}</p>
+          <div className="catalogue-hero__stats">
+            <strong>{world.series.length}</strong><span>series</span>
+            <strong>{world.series.reduce((sum, series) => sum + series.products.length, 0)}</strong><span>models</span>
+          </div>
+        </motion.div>
+        <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1 }} className="catalogue-hero__media" style={{ '--world-accent': world.accentColor } as React.CSSProperties}>
+          <img src={world.heroImage} alt={`${world.name} featured model`} />
+        </motion.div>
       </section>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 space-y-36">
-        {isDeathNote && (
-          <section className="death-note-chapter relative space-y-12">
-            <div className="border-b border-white/10 pb-6">
-              <span className="text-xs font-space tracking-[0.35em] text-red-400 uppercase font-semibold">BLACK FEATHER / WHITE PAPER / RED SILENCE</span>
-              <h2 className="type-display-m font-syne uppercase text-white mt-2">
-                THE <FlipWord text="SHADOW" accentColor="#ef4444" /> REVEALS RYUK
-              </h2>
-            </div>
-
-            <div className="death-note-chapter__papers" />
-            <div className="death-note-chapter__cast">
-              {characters.map((character, index) => (
-                <motion.div
-                  key={character.slug}
-                  initial={{ opacity: 0, y: 54, scale: 0.9 }}
-                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                  viewport={{ once: true, margin: '-12%' }}
-                  transition={{ duration: 0.8, delay: index * 0.1 }}
-                  onClick={() => navigate(`/character/${character.slug}`)}
-                  onMouseEnter={() => setCursor(`VIEW ${character.name}`, 'image')}
-                  onMouseLeave={resetCursor}
-                  className="death-note-chapter__figure"
-                  style={{ '--figure-accent': character.accentColor } as React.CSSProperties}
-                >
-                  <div className="world-character-landscape__glow" />
-                  <img src={character.heroImage} alt={character.name} loading="lazy" />
-                  <div className="world-character-landscape__caption">
-                    <span>{character.tagline}</span>
-                    <strong>{character.name}</strong>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {!isDeathNote && (
-          <section className="space-y-12">
-            <div className="border-b border-white/10 pb-6">
-              <span className="text-xs font-space tracking-[0.35em] uppercase font-semibold" style={{ color: world.themeColor }}>CHARACTER ENCOUNTERS</span>
-              <h2 className="type-display-m font-syne uppercase text-white mt-2">
-                FIGURES OF <FlipWord text={world.name} accentColor={world.themeColor} />
-              </h2>
-            </div>
-
-            {characters.length > 0 ? (
-              <div className={`world-character-landscape world-character-landscape--${world.id}`}>
-                {characters.map((character, index) => (
-                  <motion.div
-                    key={character.slug}
-                    initial={{ opacity: 0, y: 54, scale: 0.9 }}
-                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                    viewport={{ once: true, margin: '-12%' }}
-                    transition={{ duration: 0.8, delay: index * 0.08 }}
-                    onClick={() => navigate(`/character/${character.slug}`)}
-                    onMouseEnter={() => setCursor(`VIEW ${character.name}`, 'image')}
-                    onMouseLeave={resetCursor}
-                    className={`world-character-landscape__figure world-character-landscape__figure--${(index % 5) + 1}`}
-                    style={{ '--figure-accent': character.accentColor } as React.CSSProperties}
-                  >
-                    <div className="world-character-landscape__glow" />
-                    <img src={character.heroImage} alt={character.name} loading="lazy" />
-                    <div className="world-character-landscape__caption">
-                      <span>{character.environment}</span>
-                      <strong>{character.name}</strong>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            ) : (
-              <div className="world-empty-commission">
-                <p>Custom sculptures for this world are available via private commission.</p>
+      <main className="catalogue-main">
+        <section className="series-rail" aria-label={`${world.name} series`}>
+          <button type="button" aria-label="Scroll series left"><ChevronLeft size={18} /></button>
+          <div>
+            {world.series.map((series) => (
+              <article key={series.slug} className="series-chip" style={{ '--world-accent': world.accentColor } as React.CSSProperties}>
+                <img src={series.heroImage} alt="" loading="lazy" />
+                <span>{series.products.length || 'Future'} models</span>
+                <h2>{series.name}</h2>
+                <p>{series.description}</p>
                 <button
                   type="button"
-                  onClick={() => navigate('/custom')}
-                  onMouseEnter={() => setCursor('CREATE', 'hover')}
+                  onClick={() => series.products.length === 1 ? navigate(`/artifacts/${world.slug}/${series.slug}/${series.products[0].slug}`) : navigate(`/worlds/${world.slug}/${series.slug}`)}
+                  onMouseEnter={() => setCursor(series.name, 'hover')}
                   onMouseLeave={resetCursor}
                 >
-                  REQUEST CUSTOM SCULPTURE -&gt;
+                  OPEN SERIES -&gt;
                 </button>
-              </div>
-            )}
-          </section>
-        )}
-      </div>
+              </article>
+            ))}
+          </div>
+          <button type="button" aria-label="Scroll series right"><ChevronRight size={18} /></button>
+        </section>
+
+        <section className="catalogue-workbench">
+          <aside className="catalogue-filters" aria-label="Catalogue filters">
+            <span>FILTERS</span>
+            <label>Series<select value={seriesFilter} onChange={(event) => setSeriesFilter(event.target.value)}><option value="all">All series</option>{world.series.map((series) => <option key={series.slug} value={series.slug}>{series.name}</option>)}</select></label>
+            <label>Character<input value={characterFilter} onChange={(event) => setCharacterFilter(event.target.value)} placeholder="Search name" /></label>
+            <label>Size<select value={sizeFilter} onChange={(event) => setSizeFilter(event.target.value)}><option value="all">Any size</option>{sizes.map((size) => <option key={size} value={size}>{size}</option>)}</select></label>
+            <label>Finish<select value={finishFilter} onChange={(event) => setFinishFilter(event.target.value)}><option value="all">Any finish</option><option value="painted">Painted</option><option value="unpainted">Unpainted</option></select></label>
+            <label>Status<select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option value="all">Any status</option><option value="made-to-order">Made to order</option><option value="ready-to-ship">Ready to ship</option><option value="concept">Concept</option></select></label>
+            <label>Price range<span>Up to INR {priceFilter.toLocaleString('en-IN')}</span><input type="range" min="2000" max="10000" step="500" value={priceFilter} onChange={(event) => setPriceFilter(Number(event.target.value))} /></label>
+          </aside>
+
+          <div className="product-grid">
+            {products.map((product) => (
+              <button
+                key={`${product.series.slug}-${product.slug}`}
+                type="button"
+                className="product-card"
+                style={{ '--world-accent': product.accentColor } as React.CSSProperties}
+                onClick={() => navigate(`/artifacts/${world.slug}/${product.series.slug}/${product.slug}`)}
+                onMouseEnter={() => setCursor(product.name, 'image')}
+                onMouseLeave={resetCursor}
+              >
+                <span>{product.series.name}</span>
+                <img src={product.image} alt={`${product.name} 3D model`} loading="lazy" />
+                <strong>{product.name}</strong>
+                <em>{product.status.replaceAll('-', ' ')}</em>
+              </button>
+            ))}
+            {products.length === 0 && <div className="catalogue-empty">No models match the current filters.</div>}
+          </div>
+        </section>
+
+        <nav className="related-worlds" aria-label="Related worlds">
+          {relatedWorlds.map((item) => (
+            <button key={item.slug} type="button" onClick={() => navigate(`/worlds/${item.slug}`)} style={{ '--world-accent': item.accentColor } as React.CSSProperties}>
+              {item.name} <span>-&gt;</span>
+            </button>
+          ))}
+        </nav>
+      </main>
     </div>
   );
 };

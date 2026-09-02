@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { FlipWord } from '../components/ui/FlipWord';
-import { WORLDS } from '../data/worlds';
+import { CATALOGUE_WORLDS, countWorldProducts, getWorldLeadProducts } from '../data/catalogue';
 import { getFeaturedArtifacts } from '../data/characters';
 import { useCursor } from '../context/CursorContext';
 import { CommissionModal } from '../components/common/CommissionModal';
@@ -10,9 +10,9 @@ import { CommissionModal } from '../components/common/CommissionModal';
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const { setCursor, resetCursor } = useCursor();
+  const gridRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isCommissionOpen, setIsCommissionOpen] = useState(false);
-  const [activeUniverse, setActiveUniverse] = useState(0);
   const [activeArtifact, setActiveArtifact] = useState(0);
   const [realitySplit, setRealitySplit] = useState(54);
   const { scrollY } = useScroll();
@@ -20,8 +20,8 @@ export const HomePage: React.FC = () => {
   const heroOpacity = useTransform(scrollY, [0, 760], [1, 0.08]);
   const vaultArtifacts = getFeaturedArtifacts();
   const activeCharacter = vaultArtifacts[activeArtifact] || vaultArtifacts[0];
-  const activeWorld = WORLDS[activeUniverse] || WORLDS[0];
-  const supportingWorlds = WORLDS.filter((world) => world.id !== activeWorld.id).slice(0, 2);
+  const firstWorldRow = CATALOGUE_WORLDS;
+  const secondWorldRow = [...CATALOGUE_WORLDS].reverse();
   const heroSpotlight = {
     '--spot-x': `${50 + mousePos.x * 10}%`,
     '--spot-y': `${42 + mousePos.y * 8}%`,
@@ -38,6 +38,85 @@ export const HomePage: React.FC = () => {
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
+
+  const handleGridPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    const grid = gridRef.current;
+    if (!grid) return;
+
+    const pointerStart = event.clientX;
+    const scrollStart = grid.scrollLeft;
+    grid.setPointerCapture(event.pointerId);
+    grid.dataset.dragging = 'true';
+
+    const onPointerMove = (moveEvent: PointerEvent) => {
+      grid.scrollLeft = scrollStart - (moveEvent.clientX - pointerStart);
+    };
+
+    const stopDragging = () => {
+      grid.dataset.dragging = 'false';
+      grid.removeEventListener('pointermove', onPointerMove);
+      grid.removeEventListener('pointerup', stopDragging);
+      grid.removeEventListener('pointercancel', stopDragging);
+    };
+
+    grid.addEventListener('pointermove', onPointerMove);
+    grid.addEventListener('pointerup', stopDragging);
+    grid.addEventListener('pointercancel', stopDragging);
+  };
+
+  const renderWorldCard = (world: (typeof CATALOGUE_WORLDS)[number], duplicateIndex: number) => {
+    const products = getWorldLeadProducts(world);
+    const lead = products[0];
+    const supporting = products.slice(1, 3);
+
+    return (
+      <article
+        key={`${world.slug}-${duplicateIndex}`}
+        className="world-marquee-card"
+        style={{ '--world-accent': world.accentColor } as React.CSSProperties}
+      >
+        <button
+          type="button"
+          className="world-marquee-card__hit"
+          onClick={() => navigate(`/worlds/${world.slug}`)}
+          onMouseEnter={() => setCursor(`ENTER ${world.name}`, 'hover')}
+          onMouseLeave={resetCursor}
+          aria-label={`Explore ${world.name}`}
+        />
+        <div className="world-marquee-card__media">
+          <div className="world-marquee-card__glow" />
+          <img
+            src={lead?.image || world.heroImage}
+            alt=""
+            className="world-marquee-card__lead"
+            loading={duplicateIndex === 0 ? 'eager' : 'lazy'}
+          />
+          {supporting.map((item, index) => (
+            <button
+              key={item.slug}
+              type="button"
+              className={`world-marquee-card__support world-marquee-card__support--${index + 1}`}
+              aria-label={`Open ${item.name}`}
+              onClick={(event) => {
+                event.stopPropagation();
+                navigate(`/artifacts/${world.slug}/${item.series.slug}/${item.slug}`);
+              }}
+              onMouseEnter={() => setCursor(item.name, 'image')}
+              onMouseLeave={resetCursor}
+            >
+              <img src={item.image} alt={`${item.name} 3D model`} loading="lazy" />
+            </button>
+          ))}
+        </div>
+        <div className="world-marquee-card__copy">
+          <span>{countWorldProducts(world)} models</span>
+          <h3>{world.name}</h3>
+          <p>{world.description}</p>
+          <strong>EXPLORE WORLD -&gt;</strong>
+        </div>
+      </article>
+    );
+  };
 
   return (
     <div className="relative min-h-screen bg-transparent text-white overflow-hidden">
@@ -87,57 +166,24 @@ export const HomePage: React.FC = () => {
         </motion.div>
       </section>
 
-      <section
-        id="world-discovery"
-        className={`world-gate world-gate--${activeWorld.id}`}
-        style={{ '--universe-accent': activeWorld.themeColor } as React.CSSProperties}
-      >
-        <div className="world-gate__texture" />
-        <div className="world-gate__layout">
-          <div className="world-gate__copy">
-            <span>CHAPTER 02 / ENTER A WORLD</span>
-            <div className="world-gate__titles" role="tablist" aria-label="Choose an Orion world">
-              {WORLDS.map((world, index) => (
-                <button
-                  key={world.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={activeUniverse === index}
-                  onClick={() => setActiveUniverse(index)}
-                  onMouseEnter={() => setCursor(world.name, 'hover')}
-                  onMouseLeave={resetCursor}
-                  className={activeUniverse === index ? 'is-active' : ''}
-                  style={{ '--tab-accent': world.themeColor } as React.CSSProperties}
-                >
-                  <em>{String(index + 1).padStart(2, '0')}</em>
-                  {world.name}
-                </button>
-              ))}
-            </div>
-            <p>{activeWorld.subhead}</p>
-            <div className="world-gate__facts">
-              <span>{getFeaturedArtifacts().filter((artifact) => artifact.worldId === activeWorld.id).length || activeWorld.characterSlugs.length} artifacts</span>
-              <span>Made to order</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => navigate(`/world/${activeWorld.id}`)}
-              onMouseEnter={() => setCursor('ENTER WORLD', 'hover')}
-              onMouseLeave={resetCursor}
-              className="orion-text-cta"
-            >
-              ENTER WORLD -&gt;
-            </button>
-          </div>
+      <section id="world-discovery" className="world-marquee-section" aria-labelledby="choose-world-title">
+        <div className="world-marquee-section__head">
+          <span>CHAPTER 02 / ENTER A WORLD</span>
+          <h2 id="choose-world-title">CHOOSE YOUR WORLD</h2>
+          <p>Start with a universe, move into a series, then open the individual model page.</p>
+        </div>
 
-          <div className="world-gate__stage">
-            <div className="world-gate__cut" />
-            <img src={activeWorld.heroImage} alt={activeWorld.name} loading="lazy" />
-            <div className="world-gate__ghosts">
-              {supportingWorlds.map((world) => (
-                <img key={world.id} src={world.heroImage} alt="" loading="lazy" />
-              ))}
-            </div>
+        <div
+          ref={gridRef}
+          className="world-marquee"
+          onPointerDown={handleGridPointerDown}
+          aria-label="Scrollable Orion worlds"
+        >
+          <div className="world-marquee__row world-marquee__row--left">
+            {[...firstWorldRow, ...firstWorldRow].map(renderWorldCard)}
+          </div>
+          <div className="world-marquee__row world-marquee__row--right">
+            {[...secondWorldRow, ...secondWorldRow].map(renderWorldCard)}
           </div>
         </div>
       </section>

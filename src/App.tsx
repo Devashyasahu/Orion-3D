@@ -19,6 +19,7 @@ import { HomePage } from './pages/HomePage';
 import { WorldsPage } from './pages/WorldsPage';
 import { WorldDetailPage } from './pages/WorldDetailPage';
 import { CharacterDetailPage } from './pages/CharacterDetailPage';
+import { SeriesPage } from './pages/SeriesPage';
 import { StudioPage } from './pages/StudioPage';
 import { CustomPage } from './pages/CustomPage';
 import { AboutPage } from './pages/AboutPage';
@@ -46,6 +47,9 @@ function ExperienceFrame() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/worlds" element={<WorldsPage />} />
+          <Route path="/worlds/:worldSlug" element={<WorldDetailPage />} />
+          <Route path="/worlds/:worldSlug/:seriesSlug" element={<SeriesPage />} />
+          <Route path="/artifacts/:worldSlug/:seriesSlug/:productSlug" element={<CharacterDetailPage />} />
           <Route path="/world/:worldId" element={<WorldDetailPage />} />
           <Route path="/character/:slug" element={<CharacterDetailPage />} />
           <Route path="/studio" element={<StudioPage />} />

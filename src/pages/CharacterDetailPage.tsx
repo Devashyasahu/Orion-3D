@@ -1,149 +1,119 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { getCharacterBySlug } from '../data/characters';
-import { useCursor } from '../context/CursorContext';
+import React, { useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { getAllProducts, getProductByLegacySlug, getProductByPath } from '../data/catalogue';
 import { CommissionModal } from '../components/common/CommissionModal';
 import { FlipWord } from '../components/ui/FlipWord';
+import { useCursor } from '../context/CursorContext';
 
 export const CharacterDetailPage: React.FC = () => {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug, worldSlug, seriesSlug, productSlug } = useParams<{ slug: string; worldSlug: string; seriesSlug: string; productSlug: string }>();
   const navigate = useNavigate();
   const { setCursor, resetCursor } = useCursor();
   const [isCommissionOpen, setIsCommissionOpen] = useState(false);
-  const character = getCharacterBySlug(slug || '');
-  const { scrollY } = useScroll();
-  const imageY = useTransform(scrollY, [0, 900], [0, 72]);
-  const titleY = useTransform(scrollY, [0, 700], [0, -80]);
+  const product = worldSlug && seriesSlug && productSlug
+    ? getProductByPath(worldSlug, seriesSlug, productSlug)
+    : getProductByLegacySlug(slug || '');
+  const [activeImage, setActiveImage] = useState(0);
 
-  if (!character) {
+  const related = useMemo(() => {
+    if (!product) return [];
+    return getAllProducts()
+      .filter((item) => item.slug !== product.slug && (item.world.slug === product.world.slug || item.series.slug === product.series.slug))
+      .slice(0, 8);
+  }, [product]);
+
+  if (!product) {
     return (
       <div className="min-h-screen bg-[#040406] text-white flex flex-col items-center justify-center p-6">
-        <h1 className="text-4xl font-syne font-bold">CHARACTER UNFOUND</h1>
+        <h1 className="text-4xl font-space font-bold uppercase">MODEL UNFOUND</h1>
         <button onClick={() => navigate('/worlds')} className="mt-6 text-xs font-space tracking-[0.2em] text-cyan-300 hover:underline uppercase">
-          EXPLORE EXHIBITION WORLDS -&gt;
+          EXPLORE WORLDS -&gt;
         </button>
       </div>
     );
   }
 
-  const process = [
-    ['SILHOUETTE', character.description],
-    ['SCULPTURE', character.story],
-    ['MATERIAL', `${character.metadata.material} / ${character.metadata.layerResolution} / ${character.metadata.finish}`],
-    ['PHYSICAL', `${character.metadata.printTimeHours}, refined by hand, packed securely, and confirmed for ${character.metadata.edition}.`],
-  ];
-  const environmentKey = ['light-yagami', 'l', 'ryuk'].includes(character.slug) ? 'death-note' : character.worldId;
+  const gallery = product.gallery.length ? product.gallery : [product.image];
+  const galleryLabels = ['Complete model', 'Front placeholder', 'Side placeholder', 'Rear placeholder', 'Detail placeholder'];
 
   return (
-    <div
-      className={`world-environment world-environment-${environmentKey} min-h-screen bg-transparent text-white pb-28 relative overflow-hidden`}
-      style={{ '--artifact-accent': character.accentColor } as React.CSSProperties}
-    >
-      <CommissionModal isOpen={isCommissionOpen} onClose={() => setIsCommissionOpen(false)} characterName={character.name} />
-      <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,226,181,0.16)_0%,rgba(34,45,54,0.34)_34%,rgba(29,28,35,0.5)_62%,rgba(12,14,18,0.84)_100%)]" />
-      <div className="absolute inset-0" style={{ background: `radial-gradient(circle at 52% 40%, ${character.accentColor}34, transparent 34%)` }} />
-      <div className="world-skyline" />
-      <div className="world-weather" />
-      <div className="world-symbols" />
+    <div className="product-page min-h-screen bg-transparent text-white pb-24 relative overflow-hidden" style={{ '--world-accent': product.accentColor } as React.CSSProperties}>
+      <CommissionModal isOpen={isCommissionOpen} onClose={() => setIsCommissionOpen(false)} characterName={product.name} />
+      <div className={`absolute inset-0 bg-gradient-to-br ${product.world.bgGradient} opacity-90`} />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_58%_32%,rgba(125,211,252,0.12),transparent_34%),radial-gradient(circle_at_18%_80%,rgba(255,255,255,0.08),transparent_30%)]" />
 
-      <section className={`artifact-detail-hero artifact-${character.slug} image-mode-${character.imageMode} relative min-h-screen flex items-center overflow-hidden px-6 md:px-12 pt-28`}>
-        <motion.div style={{ y: imageY }} className="artifact-detail-hero__image absolute inset-x-0 bottom-[-2vh] mx-auto w-[min(92vw,880px)] pointer-events-none">
-          <img src={character.heroImage} alt={character.name} className="w-full h-auto object-contain drop-shadow-[0_60px_110px_rgba(0,0,0,0.86)]" />
-          <div className="absolute left-1/2 bottom-[6%] h-10 w-[62%] -translate-x-1/2 rounded-full bg-black/45 blur-3xl" />
-        </motion.div>
+      <main className="product-shell">
+        <section className="product-hero">
+          <div className="product-gallery" aria-label={`${product.name} image gallery`}>
+            <div className="product-gallery__stage">
+              <img src={gallery[activeImage] || product.image} alt={`${product.name} complete 3D model`} />
+            </div>
+            <div className="product-gallery__controls">
+              <button type="button" aria-label="Previous image" onClick={() => setActiveImage((activeImage + gallery.length - 1) % gallery.length)}><ChevronLeft size={18} /></button>
+              <div>
+                {galleryLabels.map((label, index) => (
+                  <button
+                    key={label}
+                    type="button"
+                    className={activeImage === index % gallery.length ? 'is-active' : ''}
+                    onClick={() => setActiveImage(index % gallery.length)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <button type="button" aria-label="Next image" onClick={() => setActiveImage((activeImage + 1) % gallery.length)}><ChevronRight size={18} /></button>
+            </div>
+          </div>
 
-        <motion.div style={{ y: titleY }} className="artifact-detail-hero__content relative z-10 max-w-7xl mx-auto w-full">
-          <div className="max-w-[44rem]">
-            <span className="text-xs font-space tracking-[0.35em] uppercase font-semibold" style={{ color: character.accentColor }}>
-              {character.worldName}
-            </span>
-            <h1 className="mt-4 type-display-l font-syne uppercase text-white">
-              <FlipWord text={character.name} accentColor={character.accentColor} />
-            </h1>
-            <p className="mt-6 max-w-2xl text-sm md:text-lg font-space text-white/75 leading-relaxed">{character.description}</p>
-          </div>
-          <div className="artifact-buy-panel mt-12">
-            <span>{character.worldName}</span>
-            <strong>{character.commerce.priceLabel}</strong>
-            <em>{character.commerce.availability}</em>
-            <button
-              type="button"
-              onClick={() => setIsCommissionOpen(true)}
-              onMouseEnter={() => setCursor(character.commerce.primaryCta, 'hover')}
-              onMouseLeave={resetCursor}
-            >
-              {character.commerce.primaryCta}
-            </button>
-            <small>{character.commerce.fulfillment}</small>
-          </div>
-        </motion.div>
-      </section>
-
-      <main className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 space-y-32">
-        <section className="character-closeup">
-          <div className="character-closeup__light" style={{ '--figure-accent': character.accentColor } as React.CSSProperties} />
-          <div className={`character-closeup__image character-closeup__image--near artifact-${character.slug} image-mode-${character.imageMode}`}>
-            <img src={character.gallery[0] || character.heroImage} alt={`${character.name} close sculpt view`} loading="lazy" />
-          </div>
-          <div className="character-closeup__image character-closeup__image--far">
-            <img src={character.gallery[1] || character.heroImage} alt={`${character.name} physical finish view`} loading="lazy" />
-          </div>
-          <div className="character-closeup__text">
-            <span>{character.metadata.height} / {character.metadata.weight}</span>
-            <h2>Physical texture, not a product photo.</h2>
-            <p>{character.craftsmanshipHighlights.join(' / ')}</p>
+          <div className="product-copy">
+            <span>{product.world.name} / {product.series.name}</span>
+            <h1><FlipWord text={product.name} accentColor={product.accentColor} /></h1>
+            <p>{product.description}</p>
+            <div className="product-options">
+              <fieldset>
+                <legend>Size options</legend>
+                {product.sizes.map((size) => <label key={size}><input type="radio" name="size" defaultChecked={size === product.sizes[0]} />{size}</label>)}
+              </fieldset>
+              <fieldset>
+                <legend>Finish options</legend>
+                {product.finishes.map((finish) => <label key={finish}><input type="radio" name="finish" defaultChecked={finish === product.finishes[0]} />{finish}</label>)}
+              </fieldset>
+            </div>
+            <div className="product-actions">
+              <button type="button" onClick={() => setIsCommissionOpen(true)}>RESERVE THIS BUILD</button>
+              <button type="button" onClick={() => navigate('/custom')}>CREATE YOUR VERSION</button>
+            </div>
           </div>
         </section>
 
-        <section className="character-process">
-          {process.map(([title, body], index) => (
-            <motion.div
-              key={title}
-              initial={{ opacity: 0, y: 44 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className={`character-process__step ${index % 2 ? 'character-process__step--right' : ''}`}
-            >
-              <h2 className="type-display-m font-syne uppercase text-white">
-                <FlipWord text={title} accentColor={character.accentColor} />
-              </h2>
-              <p className="text-sm md:text-base font-space tracking-wider text-white/68 uppercase leading-relaxed">
-                {body}
-              </p>
-            </motion.div>
-          ))}
+        <section className="product-specs" aria-label="Model specifications">
+          <div><span>World</span><strong>{product.world.name}</strong></div>
+          <div><span>Series</span><strong>{product.series.name}</strong></div>
+          <div><span>Status</span><strong>{product.status.replaceAll('-', ' ')}</strong></div>
+          <div><span>Pricing</span><strong>Reserved for final studio pricing</strong></div>
+          <div><span>Media</span><strong>Front, side, rear, and detail slots ready</strong></div>
         </section>
 
-        <section className="text-center pt-24 space-y-8">
-          <p className="text-xs font-space tracking-[0.35em] uppercase text-white/50">YOU HAVE SEEN THE FIGURE.</p>
-          <h2 className="type-display-m font-syne uppercase text-white">
-            <FlipWord text="NOW MAKE IT YOURS." accentColor={character.accentColor} />
-          </h2>
-          <div className="flex flex-col md:flex-row items-center justify-center gap-8 pt-4">
-            <span
-              onClick={() => setIsCommissionOpen(true)}
-              onMouseEnter={() => setCursor('REQUEST', 'hover')}
-              onMouseLeave={resetCursor}
-              className="inline-flex items-center space-x-3 text-sm font-space tracking-[0.3em] font-semibold uppercase cursor-pointer transition-colors"
-              style={{ color: character.accentColor }}
-            >
-              <span>{character.commerce.primaryCta}</span>
-              <span>-&gt;</span>
-            </span>
-
-            <span className="hidden md:inline text-white/30 font-space">•</span>
-
-            <span
-              onClick={() => navigate('/custom')}
-              onMouseEnter={() => setCursor('CREATE', 'hover')}
-              onMouseLeave={resetCursor}
-              className="inline-flex items-center space-x-3 text-sm font-space tracking-[0.3em] font-semibold text-white/80 hover:text-white cursor-pointer transition-colors uppercase"
-            >
-              <span>CREATE YOUR OWN</span>
-              <span>-&gt;</span>
-            </span>
+        <section className="related-products" aria-label="Related products">
+          <div className="related-products__head">
+            <span>RELATED CHARACTERS / SERIES</span>
+            <button type="button" onClick={() => navigate(`/worlds/${product.world.slug}/${product.series.slug}`)}>OPEN SERIES -&gt;</button>
+          </div>
+          <div className="related-products__row">
+            {[...related, ...related].map((item, index) => (
+              <button
+                key={`${item.slug}-${index}`}
+                type="button"
+                onClick={() => navigate(`/artifacts/${item.world.slug}/${item.series.slug}/${item.slug}`)}
+                onMouseEnter={() => setCursor(item.name, 'image')}
+                onMouseLeave={resetCursor}
+              >
+                <img src={item.image} alt={`${item.name} 3D model`} loading="lazy" />
+                <span>{item.name}</span>
+              </button>
+            ))}
           </div>
         </section>
       </main>
