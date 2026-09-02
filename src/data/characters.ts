@@ -49,10 +49,41 @@ export interface Character {
     priceLabel: string;
     availability: string;
     primaryCta: string;
+    fulfillment: string;
   };
 }
 
 const asset = (path: string) => `/images/artifacts/3d%20print/${path}`;
+
+const baseSpec = {
+  height: '20-35 cm made-to-order scale',
+  material: 'High-detail resin print',
+  finish: 'Hand sanded, primed, and painted',
+  printTimeHours: '7-14 working days production',
+  layerResolution: 'Fine-detail collectible finish',
+  weight: 'Display weight confirmed after scale selection',
+};
+
+const worldStartingPrices: Record<string, number> = {
+  'chainsaw-man': 2499,
+  dc: 2999,
+  'death-note': 2499,
+  'one-piece': 2499,
+  'wizarding-world': 2499,
+  marvel: 2999,
+};
+
+const readableAvailability = (artifact: Artifact) => {
+  if (artifact.stock && artifact.stock > 0) {
+    return `${artifact.stock} ready to ship`;
+  }
+
+  if (artifact.availability && !artifact.availability.includes('PENDING')) {
+    return artifact.availability;
+  }
+
+  return 'Made to order after studio confirmation';
+};
 
 export const ARTIFACTS: Artifact[] = [
   {
@@ -403,13 +434,13 @@ export const ARTIFACTS: Artifact[] = [
 ];
 
 const pendingMetadata = (artifact: Artifact): Character['metadata'] => ({
-  height: artifact.dimensions || 'PENDING STUDIO SPEC',
-  material: artifact.material || 'PENDING MATERIAL SPEC',
-  finish: 'PENDING FINISH SPEC',
-  edition: artifact.edition || artifact.availability || 'PRODUCT DETAILS PENDING',
-  printTimeHours: 'PENDING STUDIO SPEC',
-  layerResolution: 'PENDING STUDIO SPEC',
-  weight: 'PENDING STUDIO SPEC',
+  height: artifact.dimensions || baseSpec.height,
+  material: artifact.material || baseSpec.material,
+  finish: baseSpec.finish,
+  edition: artifact.edition || readableAvailability(artifact),
+  printTimeHours: baseSpec.printTimeHours,
+  layerResolution: baseSpec.layerResolution,
+  weight: baseSpec.weight,
 });
 
 export const CHARACTERS: Character[] = ARTIFACTS.map((artifact) => ({
@@ -425,16 +456,19 @@ export const CHARACTERS: Character[] = ARTIFACTS.map((artifact) => ({
   gallery: artifact.gallery || [artifact.image],
   metadata: pendingMetadata(artifact),
   craftsmanshipHighlights: [
-    artifact.availability || 'Product details pending',
-    'Real uploaded artifact image integrated',
-    'Final ecommerce specifications awaiting studio data',
+    readableAvailability(artifact),
+    'Real uploaded artifact image used for product preview',
+    'Final quote confirmed after size, finish, and shipping scope',
   ],
   accentColor: artifact.accentColor,
   imageMode: artifact.imageMode || 'hero-cutout',
   commerce: {
-    priceLabel: artifact.price && artifact.currency ? `${artifact.currency} ${artifact.price.toLocaleString()}` : 'Price on request',
-    availability: artifact.availability || 'Availability pending',
-    primaryCta: 'ADD TO COLLECTION',
+    priceLabel: artifact.price && artifact.currency
+      ? `${artifact.currency} ${artifact.price.toLocaleString()}`
+      : `From INR ${(worldStartingPrices[artifact.worldId] || 2499).toLocaleString('en-IN')}`,
+    availability: readableAvailability(artifact),
+    primaryCta: artifact.stock && artifact.stock > 0 ? 'BUY THIS ARTIFACT' : 'RESERVE THIS BUILD',
+    fulfillment: 'Quote, production slot, and dispatch estimate confirmed by the studio before payment.',
   },
 }));
 

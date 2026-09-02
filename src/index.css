@@ -2813,6 +2813,30 @@
     color: rgba(255, 255, 255, 0.72);
   }
 
+  .orion-proof-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    max-width: 34rem;
+    margin-top: 1.25rem;
+  }
+
+  .orion-proof-line span,
+  .world-gate__facts span {
+    min-height: 30px;
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgba(125, 211, 252, 0.26);
+    background: rgba(255, 255, 255, 0.045);
+    padding: 0 0.75rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(226, 246, 255, 0.78);
+  }
+
   .orion-arrival__content button,
   .forge-tease > button,
   .orion-finale button {
@@ -2825,6 +2849,11 @@
     font-weight: 900;
     letter-spacing: 0.28em;
     text-transform: uppercase;
+  }
+
+  .orion-arrival__secondary {
+    margin-left: 1.5rem;
+    color: rgba(255, 255, 255, 0.64) !important;
   }
 
   .world-gate {
@@ -2933,8 +2962,16 @@
     line-height: 1.6;
   }
 
+  .world-gate__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-top: -0.2rem;
+  }
+
   .world-gate--chainsaw-man .world-gate__copy p,
-  .world-gate--chainsaw-man .world-gate__copy > span {
+  .world-gate--chainsaw-man .world-gate__copy > span,
+  .world-gate--chainsaw-man .world-gate__facts span {
     color: rgba(17, 17, 17, 0.66);
   }
 
@@ -3026,6 +3063,7 @@
     width: min(76%, 580px);
     max-height: 96%;
     object-fit: contain;
+    object-position: center;
     transform: translateX(-50%);
     filter: drop-shadow(0 56px 84px rgba(0, 0, 0, 0.46));
   }
@@ -3154,6 +3192,37 @@
     font-family: 'Space Grotesk', sans-serif;
     line-height: 1.65;
     color: rgba(255, 255, 255, 0.68);
+  }
+
+  .artifact-spec-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.7rem;
+    width: min(100%, 38rem);
+    margin: 1.4rem 0;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .artifact-spec-grid div {
+    min-height: 82px;
+    border-top: 1px solid color-mix(in srgb, var(--artifact-accent, #f59e0b) 38%, white 12%);
+    background: rgba(255, 255, 255, 0.035);
+    padding: 0.85rem;
+  }
+
+  .artifact-spec-grid dt {
+    margin-bottom: 0.45rem;
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--artifact-accent, #f59e0b) 72%, white 28%);
+  }
+
+  .artifact-spec-grid dd {
+    font-size: 0.78rem;
+    line-height: 1.35;
+    color: rgba(255, 255, 255, 0.76);
   }
 
   .commerce-strip,
@@ -3299,6 +3368,9 @@
 
   .forge-tease__choices button {
     min-height: 52px;
+    display: grid;
+    align-content: center;
+    gap: 0.3rem;
     padding: 0 1.1rem;
     border: 1px solid rgba(255, 255, 255, 0.16);
     background: rgba(255, 255, 255, 0.04);
@@ -3308,6 +3380,24 @@
     font-weight: 800;
     letter-spacing: 0.18em;
     text-transform: uppercase;
+  }
+
+  .forge-tease__choices small {
+    display: block;
+    font-size: 0.58rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.44);
+  }
+
+  .forge-tease__note,
+  .reality-drag__caption {
+    max-width: 42rem;
+    margin: 0 auto;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.58);
   }
 
   .studio-journal {
@@ -3773,6 +3863,12 @@
     font-size: clamp(3.4rem, 18vw, 6.4rem);
   }
 
+  .orion-arrival__secondary {
+    display: block;
+    margin-left: 0;
+    margin-top: 1rem;
+  }
+
   .artifact-detail-hero {
     display: flex !important;
     flex-direction: column;
@@ -3888,6 +3984,10 @@
   .artifact-metadata span {
     font-size: 0.56rem;
     letter-spacing: 0.12em;
+  }
+
+  .artifact-spec-grid {
+    grid-template-columns: 1fr;
   }
 
   .reality-drag__stage {

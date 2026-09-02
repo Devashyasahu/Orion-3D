@@ -25,6 +25,14 @@ export const CustomPage: React.FC = () => {
 
   const handleCustomSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const subject = encodeURIComponent('ORION 3D custom sculpture dossier');
+    const body = encodeURIComponent([
+      `Pose: ${selectedPose}`,
+      `Finish: ${selectedFinish}`,
+      `Scale: ${selectedScale}`,
+      `Reference: ${uploadedFile ? 'Attached in browser preview; collector will send original file.' : 'Collector can send reference files after studio reply.'}`,
+    ].join('\n'));
+    window.location.href = `mailto:contact@orion3d.art?subject=${subject}&body=${body}`;
     setIsPrepared(true);
   };
 
@@ -225,7 +233,7 @@ export const CustomPage: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white/40 uppercase">REFERENCE ATTACHMENT:</span>
-                  <span className="text-white/80">{uploadedFile ? 'ATTACHED' : 'PENDING'}</span>
+                  <span className="text-white/80">{uploadedFile ? 'ATTACHED' : 'CAN SEND AFTER REPLY'}</span>
                 </div>
               </div>
 
@@ -235,7 +243,7 @@ export const CustomPage: React.FC = () => {
                   <CheckCircle2 size={40} className="mx-auto text-amber-300" />
                   <h4 className="text-xl font-syne font-bold text-white">REQUEST PREPARED</h4>
                   <p className="text-xs font-space text-white/60 leading-relaxed">
-                    Your dossier is ready. Backend submission is not connected yet, so this screen prepares the collection inquiry for studio follow-up.
+                    Your email draft is ready. The studio can reply with a quote, revision scope, and production timeline.
                   </p>
                 </div>
               ) : (

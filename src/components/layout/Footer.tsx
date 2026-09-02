@@ -59,6 +59,16 @@ export const Footer: React.FC = () => {
                 </NavLink>
               </li>
               <li>
+                <a
+                  href="mailto:contact@orion3d.art?subject=ORION%203D%20shipping%20and%20care%20question"
+                  onMouseEnter={() => setCursor('FAQ', 'hover')}
+                  onMouseLeave={resetCursor}
+                  className="hover:text-cyan-300 transition-colors"
+                >
+                  FAQ / SHIPPING / CARE
+                </a>
+              </li>
+              <li>
                 <NavLink
                   to="/about"
                   onMouseEnter={() => setCursor('ABOUT', 'hover')}
@@ -79,26 +89,24 @@ export const Footer: React.FC = () => {
             <ul className="space-y-3 text-xs font-space tracking-[0.2em]">
               <li>
                 <a
-                  href="https://instagram.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  onMouseEnter={() => setCursor('INSTAGRAM', 'hover')}
+                  href="mailto:contact@orion3d.art?subject=ORION%203D%20collectible%20inquiry"
+                  onMouseEnter={() => setCursor('EMAIL INQUIRY', 'hover')}
                   onMouseLeave={resetCursor}
                   className="hover:text-cyan-300 transition-colors"
                 >
-                  INSTAGRAM
+                  EMAIL INQUIRY
                 </a>
               </li>
               <li>
                 <a
-                  href="https://whatsapp.com"
+                  href="https://wa.me/?text=Hi%20ORION%203D%2C%20I%20want%20to%20reserve%20a%20collectible%20or%20discuss%20a%20custom%20figure."
                   target="_blank"
                   rel="noreferrer"
-                  onMouseEnter={() => setCursor('WHATSAPP', 'hover')}
+                  onMouseEnter={() => setCursor('WHATSAPP QUOTE', 'hover')}
                   onMouseLeave={resetCursor}
                   className="hover:text-cyan-300 transition-colors"
                 >
-                  WHATSAPP
+                  WHATSAPP QUOTE
                 </a>
               </li>
               <li>
@@ -109,6 +117,16 @@ export const Footer: React.FC = () => {
                   className="hover:text-cyan-300 transition-colors"
                 >
                   CONTACT@ORION3D.ART
+                </a>
+              </li>
+              <li>
+                <a
+                  href="mailto:contact@orion3d.art?subject=ORION%203D%20policy%20request"
+                  onMouseEnter={() => setCursor('POLICIES', 'hover')}
+                  onMouseLeave={resetCursor}
+                  className="hover:text-cyan-300 transition-colors"
+                >
+                  POLICIES / TERMS
                 </a>
               </li>
             </ul>

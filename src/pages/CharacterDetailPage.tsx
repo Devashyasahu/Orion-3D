@@ -27,13 +27,11 @@ export const CharacterDetailPage: React.FC = () => {
     );
   }
 
-  const hasMaterialData = !character.metadata.material.includes('PENDING');
-  const hasTimingData = !character.metadata.printTimeHours.includes('PENDING');
   const process = [
     ['SILHOUETTE', character.description],
     ['SCULPTURE', character.story],
-    ['MATERIAL', hasMaterialData ? `${character.metadata.material} / ${character.metadata.layerResolution} / ${character.metadata.finish}` : 'Material, finish, and scale details are awaiting studio confirmation.'],
-    ['PHYSICAL', hasTimingData ? `Printed over ${character.metadata.printTimeHours}, refined by hand, and staged for ${character.metadata.edition}.` : 'Final production timing and finishing specifications are pending studio confirmation.'],
+    ['MATERIAL', `${character.metadata.material} / ${character.metadata.layerResolution} / ${character.metadata.finish}`],
+    ['PHYSICAL', `${character.metadata.printTimeHours}, refined by hand, packed securely, and confirmed for ${character.metadata.edition}.`],
   ];
   const environmentKey = ['light-yagami', 'l', 'ryuk'].includes(character.slug) ? 'death-note' : character.worldId;
 
@@ -72,12 +70,12 @@ export const CharacterDetailPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsCommissionOpen(true)}
-              onMouseEnter={() => setCursor('ADD TO COLLECTION', 'hover')}
+              onMouseEnter={() => setCursor(character.commerce.primaryCta, 'hover')}
               onMouseLeave={resetCursor}
             >
               {character.commerce.primaryCta}
             </button>
-            <small>Checkout is not connected yet. This prepares a collection inquiry.</small>
+            <small>{character.commerce.fulfillment}</small>
           </div>
         </motion.div>
       </section>
@@ -131,7 +129,7 @@ export const CharacterDetailPage: React.FC = () => {
               className="inline-flex items-center space-x-3 text-sm font-space tracking-[0.3em] font-semibold uppercase cursor-pointer transition-colors"
               style={{ color: character.accentColor }}
             >
-              <span>ADD TO COLLECTION</span>
+              <span>{character.commerce.primaryCta}</span>
               <span>-&gt;</span>
             </span>
 

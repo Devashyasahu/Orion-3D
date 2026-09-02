@@ -33,6 +33,14 @@ export const CommissionModal: React.FC<CommissionModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const subject = encodeURIComponent(`ORION 3D inquiry: ${characterName || 'custom sculpture'}`);
+    const body = encodeURIComponent([
+      `Name: ${formData.name}`,
+      `Email: ${formData.email}`,
+      '',
+      formData.notes,
+    ].join('\n'));
+    window.location.href = `mailto:contact@orion3d.art?subject=${subject}&body=${body}`;
     setSubmitted(true);
     setTimeout(() => {
       setSubmitted(false);
@@ -75,7 +83,7 @@ export const CommissionModal: React.FC<CommissionModalProps> = ({
                   REQUEST PREPARED
                 </h3>
                 <p className="text-xs font-space text-white/60 leading-relaxed">
-                  Checkout and backend submission are not connected yet. This prepares a collection inquiry for studio follow-up.
+                  Your email draft is ready with the artifact details. The studio can confirm quote, timeline, and dispatch before payment.
                 </p>
               </div>
             ) : (

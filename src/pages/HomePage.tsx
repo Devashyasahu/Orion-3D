@@ -62,13 +62,27 @@ export const HomePage: React.FC = () => {
             <strong>THE IMPOSSIBLE.</strong>
           </h1>
           <p>Fictional characters escaped their worlds and became physical collectibles.</p>
+          <div className="orion-proof-line" aria-label="Product proof">
+            <span>3D printed</span>
+            <span>Hand finished</span>
+            <span>Made in India</span>
+          </div>
           <button
             type="button"
             onClick={() => document.getElementById('world-discovery')?.scrollIntoView({ behavior: 'smooth' })}
-            onMouseEnter={() => setCursor('ENTER ORION', 'hover')}
+            onMouseEnter={() => setCursor('EXPLORE COLLECTION', 'hover')}
             onMouseLeave={resetCursor}
           >
-            ENTER ORION -&gt;
+            EXPLORE THE COLLECTION -&gt;
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/custom')}
+            onMouseEnter={() => setCursor('CREATE CUSTOM', 'hover')}
+            onMouseLeave={resetCursor}
+            className="orion-arrival__secondary"
+          >
+            CREATE A CUSTOM FIGURE -&gt;
           </button>
         </motion.div>
       </section>
@@ -101,6 +115,10 @@ export const HomePage: React.FC = () => {
               ))}
             </div>
             <p>{activeWorld.subhead}</p>
+            <div className="world-gate__facts">
+              <span>{getFeaturedArtifacts().filter((artifact) => artifact.worldId === activeWorld.id).length || activeWorld.characterSlugs.length} artifacts</span>
+              <span>Made to order</span>
+            </div>
             <button
               type="button"
               onClick={() => navigate(`/world/${activeWorld.id}`)}
@@ -136,13 +154,27 @@ export const HomePage: React.FC = () => {
             <span>{activeCharacter.metadata.edition}</span>
             <span>{activeCharacter.commerce.priceLabel}</span>
           </div>
+          <dl className="artifact-spec-grid">
+            <div>
+              <dt>Height</dt>
+              <dd>{activeCharacter.metadata.height}</dd>
+            </div>
+            <div>
+              <dt>Material</dt>
+              <dd>{activeCharacter.metadata.material}</dd>
+            </div>
+            <div>
+              <dt>Timeline</dt>
+              <dd>{activeCharacter.metadata.printTimeHours}</dd>
+            </div>
+          </dl>
           <p>{activeCharacter.story}</p>
           <div className="commerce-strip">
             <span>{activeCharacter.commerce.availability}</span>
             <button
               type="button"
               onClick={() => setIsCommissionOpen(true)}
-              onMouseEnter={() => setCursor('ADD TO COLLECTION', 'hover')}
+              onMouseEnter={() => setCursor(activeCharacter.commerce.primaryCta, 'hover')}
               onMouseLeave={resetCursor}
             >
               {activeCharacter.commerce.primaryCta}
@@ -184,10 +216,10 @@ export const HomePage: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsCommissionOpen(true)}
-            onMouseEnter={() => setCursor('ADD TO COLLECTION', 'hover')}
+            onMouseEnter={() => setCursor(activeCharacter.commerce.primaryCta, 'hover')}
             onMouseLeave={resetCursor}
           >
-            ADD TO COLLECTION
+            {activeCharacter.commerce.primaryCta}
           </button>
         </div>
         <div className="vault-chapter__rail" role="tablist" aria-label="Featured Orion artifacts">
@@ -232,10 +264,11 @@ export const HomePage: React.FC = () => {
             aria-label="Drag between digital sculpt and physical collectible"
           />
           <div className="reality-drag__labels">
-            <span>UPLOADED ARTIFACT</span>
-            <span>PHYSICAL FINISH</span>
+            <span>DIGITAL SCULPT</span>
+            <span>FINISHED PRINT</span>
           </div>
         </div>
+        <p className="reality-drag__caption">Sculpt - Print - Hand Finish</p>
       </section>
 
       <section className="forge-tease">
@@ -245,10 +278,11 @@ export const HomePage: React.FC = () => {
           TO BRING INTO REALITY?
         </h2>
         <div className="forge-tease__choices" aria-label="Forge creation types">
-          <button>A CHARACTER</button>
-          <button>YOURSELF</button>
-          <button>AN ORIGINAL CREATION</button>
+          <button>A CHARACTER <small>Reference images</small></button>
+          <button>YOURSELF <small>Portrait or avatar</small></button>
+          <button>AN ORIGINAL CREATION <small>Concept brief</small></button>
         </div>
+        <p className="forge-tease__note">Includes sculpt preview, one revision round, production estimate, and quote before payment.</p>
         <button
           type="button"
           onClick={() => navigate('/custom')}
@@ -282,8 +316,8 @@ export const HomePage: React.FC = () => {
           ISN'T FINISHED.
         </h2>
         <div>
-          <button type="button" onClick={() => navigate('/worlds')}>ENTER THE VAULT -&gt;</button>
-          <button type="button" onClick={() => navigate('/custom')}>CREATE YOURS -&gt;</button>
+          <button type="button" onClick={() => navigate('/worlds')}>SHOP COLLECTIBLES -&gt;</button>
+          <button type="button" onClick={() => navigate('/custom')}>START A CUSTOM PROJECT -&gt;</button>
         </div>
       </section>
     </div>

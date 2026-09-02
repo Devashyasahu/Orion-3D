@@ -24,9 +24,10 @@ export const Navbar: React.FC = () => {
   }, [location.pathname]);
 
   const navItems = [
-    { label: 'DISCOVER', path: '/worlds' },
-    { label: 'THE FORGE', path: '/custom' },
-    { label: 'STUDIO', path: '/studio' },
+    { label: 'WORLDS', path: '/worlds' },
+    { label: 'VAULT', path: '/worlds' },
+    { label: 'CUSTOM', path: '/custom' },
+    { label: 'PROCESS', path: '/studio' },
     { label: 'ABOUT', path: '/about' },
   ];
 
@@ -86,6 +87,15 @@ export const Navbar: React.FC = () => {
               </NavLink>
             ))}
           </nav>
+
+          <NavLink
+            to="/custom"
+            onMouseEnter={() => setCursor('CREATE YOURS', 'hover')}
+            onMouseLeave={resetCursor}
+            className="hidden md:inline-flex min-h-10 items-center border border-cyan-200/40 px-4 text-[10px] font-space font-semibold tracking-[0.18em] text-cyan-100 uppercase hover:border-cyan-100 hover:bg-cyan-300/10 transition-colors"
+          >
+            CREATE YOURS
+          </NavLink>
 
           {/* Mobile Hamburger Toggle */}
           <button
