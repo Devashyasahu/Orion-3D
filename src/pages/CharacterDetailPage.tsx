@@ -70,6 +70,13 @@ export const CharacterDetailPage: React.FC = () => {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_58%_32%,rgba(125,211,252,0.12),transparent_34%),radial-gradient(circle_at_18%_80%,rgba(255,255,255,0.08),transparent_30%)]" />
 
       <main className="product-shell">
+        <button
+          type="button"
+          className="product-back-link"
+          onClick={() => navigate(`/worlds/${product.world.slug}/${product.series.slug}`)}
+        >
+          BACK TO {product.series.name.toUpperCase()} -&gt;
+        </button>
         <section className="product-hero">
           <div className="product-gallery" aria-label={`${product.name} image gallery`}>
             <div className="product-gallery__stage" onPointerDown={handleGalleryPointerDown}>
@@ -121,8 +128,8 @@ export const CharacterDetailPage: React.FC = () => {
             </div>
             <div className="product-actions">
               <button type="button" onClick={() => setIsCommissionOpen(true)}>RESERVE THIS BUILD</button>
-              <button type="button" onClick={() => navigate('/custom')}>CREATE YOUR VERSION</button>
             </div>
+            <button type="button" className="product-secondary-action" onClick={() => navigate('/custom')}>CREATE YOUR VERSION -&gt;</button>
           </div>
         </section>
 
