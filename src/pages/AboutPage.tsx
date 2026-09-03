@@ -16,10 +16,10 @@ export const AboutPage: React.FC = () => {
           <span className="text-xs font-space tracking-[0.35em] text-amber-300 uppercase font-semibold">
             ABOUT ORION 3D
           </span>
-          <h1 className="text-5xl md:text-8xl font-syne font-extrabold uppercase tracking-tight text-white leading-none">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-syne font-extrabold uppercase tracking-tight text-white leading-none break-words">
             WE MAKE IMAGINATION PHYSICAL.
           </h1>
-          <p className="text-base md:text-xl font-space text-white/70 leading-relaxed max-w-2xl">
+          <p className="text-sm md:text-xl font-space text-white/70 leading-relaxed max-w-2xl">
             Orion is a digital art gallery and physical sculpture studio creating collectible forms from fictional worlds.
           </p>
         </div>

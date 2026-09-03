@@ -157,11 +157,35 @@ export const Navbar: React.FC = () => {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
             ref={mobileMenuRef}
-            className="mobile-nav-panel fixed inset-0 z-[75] bg-[#040406]/96 backdrop-blur-2xl px-8 py-12 flex flex-col justify-between border-b border-white/10 md:hidden"
+            className="mobile-nav-panel fixed inset-0 z-[75] bg-[#040406]/96 backdrop-blur-2xl px-8 py-8 flex flex-col justify-between border-b border-white/10 md:hidden overflow-y-auto"
           >
-            <div className="flex flex-col space-y-8 mt-6">
+            <div className="flex items-center justify-between pb-6 border-b border-white/10">
               <NavLink
                 to="/"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center space-x-3"
+              >
+                <div className="w-7 h-7 border border-cyan-200/45 bg-white/5 flex items-center justify-center rotate-45">
+                  <div className="w-2 h-2 bg-cyan-200" />
+                </div>
+                <span className="text-sm font-space font-semibold tracking-[0.18em] text-white">
+                  ORION <span className="text-cyan-300 font-medium text-xs ml-0.5">3D</span>
+                </span>
+              </NavLink>
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                className="p-3 text-white/80 hover:text-white border border-white/10 bg-white/5 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                aria-label="Close menu"
+              >
+                <X size={22} />
+              </button>
+            </div>
+
+            <div className="flex flex-col space-y-6 my-auto py-8">
+              <NavLink
+                to="/"
+                onClick={() => setMobileOpen(false)}
                 className="mobile-nav-panel__link text-2xl font-space tracking-[0.12em] text-white hover:text-cyan-300"
               >
                 HOME
@@ -170,6 +194,7 @@ export const Navbar: React.FC = () => {
                 <NavLink
                   key={item.path}
                   to={item.path}
+                  onClick={() => setMobileOpen(false)}
                   className={({ isActive }) =>
                     `mobile-nav-panel__link text-2xl font-space tracking-[0.12em] transition-colors ${
                       isActive ? 'text-cyan-300 font-bold' : 'text-white/70 hover:text-white'
@@ -181,13 +206,14 @@ export const Navbar: React.FC = () => {
               ))}
               <NavLink
                 to="/custom"
-                className="mobile-nav-panel__cta text-2xl font-space tracking-[0.12em] text-cyan-100"
+                onClick={() => setMobileOpen(false)}
+                className="mobile-nav-panel__cta text-2xl font-space tracking-[0.12em] text-cyan-100 mt-4"
               >
                 CREATE YOURS
               </NavLink>
             </div>
 
-            <div className="pt-8 border-t border-white/10 text-xs font-space tracking-widest text-white/40">
+            <div className="pt-6 border-t border-white/10 text-xs font-space tracking-widest text-white/40">
               ORION 3D — DIGITAL WORLDS. PHYSICAL CHARACTERS.
             </div>
           </motion.div>

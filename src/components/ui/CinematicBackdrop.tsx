@@ -5,9 +5,12 @@ export const CinematicBackdrop: React.FC = () => {
     <div className="orion-backdrop" aria-hidden="true">
       <div className="orion-backdrop__sky" />
       <div className="orion-backdrop__rays" />
+      <div className="orion-backdrop__grid" />
+      <div className="orion-backdrop__grid-glow" />
       <div className="orion-backdrop__stage" />
       <div className="orion-backdrop__dust" />
       <div className="orion-backdrop__grain" />
     </div>
   );
 };
+
